@@ -2,6 +2,7 @@ import { createUploadthing, type FileRouter } from "uploadthing/next";
 
 import { getKindeServerSession } from "@kinde-oss/kinde-auth-nextjs/server";
 import { db } from "@/db";
+import { Document } from "langchain/document";
 import { PDFLoader } from "langchain/document_loaders/fs/pdf";
 import { OpenAIEmbeddings } from "langchain/embeddings/openai";
 import { PineconeStore } from "langchain/vectorstores/pinecone";
@@ -41,6 +42,18 @@ export const ourFileRouter = {
 
         const pageLevelDocs = await loader.load();
 
+        const newPage = pageLevelDocs.map((doc) => {
+          const pageContent = doc.pageContent;
+          const metadata = (doc.metadata = {
+            ...doc.metadata,
+            fileId: createdFile.id,
+          });
+          return new Document({
+            pageContent,
+            metadata,
+          });
+        });
+
         const pagesAmt = pageLevelDocs.length;
 
         // const { subscriptionPlan } = metadata
@@ -76,10 +89,8 @@ export const ourFileRouter = {
           openAIApiKey: process.env.OPENAI_API_KEY,
         });
 
-        await PineconeStore.fromDocuments(pageLevelDocs, embeddings, {
-          // @ts-ignore
+        await PineconeStore.fromDocuments(newPage, embeddings, {
           pineconeIndex,
-          namespace: createdFile.id,
         });
 
         await db.file.update({
