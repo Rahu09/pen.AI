@@ -5,32 +5,33 @@ import { trpc } from "@/app/_trpc/client";
 import { INFINITE_QUERY_LIMIT } from "@/config/infinite-query";
 
 type StreamResponse = {
-  message: string;
   addMessage: () => void;
+  message: string;
   handleInputChange: (event: React.ChangeEvent<HTMLTextAreaElement>) => void;
   isLoading: boolean;
 };
 
 export const ChatContext = createContext<StreamResponse>({
-  message: "",
   addMessage: () => {},
+  message: "",
   handleInputChange: () => {},
   isLoading: false,
 });
 
-interface props {
+interface Props {
   fileId: string;
   children: ReactNode;
 }
-export const ChatContextProvider = ({ fileId, children }: props) => {
+
+export const ChatContextProvider = ({ fileId, children }: Props) => {
   const [message, setMessage] = useState<string>("");
   const [isLoading, setIsLoading] = useState<boolean>(false);
 
   const utils = trpc.useContext();
 
-  const backupMessage = useRef("");
-
   const { toast } = useToast();
+
+  const backupMessage = useRef("");
 
   const { mutate: sendMessage } = useMutation({
     mutationFn: async ({ message }: { message: string }) => {
@@ -42,12 +43,13 @@ export const ChatContextProvider = ({ fileId, children }: props) => {
         }),
       });
 
-      if (!response.ok) throw new Error("Failed to send message");
+      if (!response.ok) {
+        throw new Error("Failed to send message");
+      }
 
       return response.body;
     },
-
-    onMutate: async () => {
+    onMutate: async ({ message }) => {
       backupMessage.current = message;
       setMessage("");
 
