@@ -1,9 +1,9 @@
+import { db } from "@/db";
+import { getKindeServerSession } from "@kinde-oss/kinde-auth-nextjs/server";
 import { createUploadthing, type FileRouter } from "uploadthing/next";
 
-import { getKindeServerSession } from "@kinde-oss/kinde-auth-nextjs/server";
-import { db } from "@/db";
-import { Document } from "langchain/document";
 import { PDFLoader } from "langchain/document_loaders/fs/pdf";
+import { Document } from "langchain/document";
 import { OpenAIEmbeddings } from "langchain/embeddings/openai";
 import { PineconeStore } from "langchain/vectorstores/pinecone";
 import { getPineconeClient } from "@/lib/pinecone";
@@ -51,6 +51,7 @@ const onUploadComplete = async ({
       uploadStatus: "PROCESSING",
     },
   });
+
   try {
     const response = await fetch(
       `https://uploadthing-prod.s3.us-west-2.amazonaws.com/${file.key}`
@@ -96,6 +97,7 @@ const onUploadComplete = async ({
     }
 
     // vectorize and index entire document
+
     const pinecone = await getPineconeClient();
     const pineconeIndex = pinecone.Index("quill");
 
@@ -128,7 +130,6 @@ const onUploadComplete = async ({
 };
 
 export const ourFileRouter = {
-  // Define as many FileRoutes as you like, each with a unique routeSlug
   freePlanUploader: f({ pdf: { maxFileSize: "4MB" } })
     .middleware(middleware)
     .onUploadComplete(onUploadComplete),
