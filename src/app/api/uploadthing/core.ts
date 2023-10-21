@@ -1,9 +1,9 @@
-import { db } from "@/db";
-import { getKindeServerSession } from "@kinde-oss/kinde-auth-nextjs/server";
 import { createUploadthing, type FileRouter } from "uploadthing/next";
 
-import { PDFLoader } from "langchain/document_loaders/fs/pdf";
+import { getKindeServerSession } from "@kinde-oss/kinde-auth-nextjs/server";
+import { db } from "@/db";
 import { Document } from "langchain/document";
+import { PDFLoader } from "langchain/document_loaders/fs/pdf";
 import { OpenAIEmbeddings } from "langchain/embeddings/openai";
 import { PineconeStore } from "langchain/vectorstores/pinecone";
 import { getPineconeClient } from "@/lib/pinecone";
@@ -51,7 +51,6 @@ const onUploadComplete = async ({
       uploadStatus: "PROCESSING",
     },
   });
-
   try {
     const response = await fetch(
       `https://uploadthing-prod.s3.us-west-2.amazonaws.com/${file.key}`
@@ -97,7 +96,6 @@ const onUploadComplete = async ({
     }
 
     // vectorize and index entire document
-
     const pinecone = await getPineconeClient();
     const pineconeIndex = pinecone.Index("quill");
 
