@@ -17,7 +17,11 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en" className="light">
+    <html
+      lang="en"
+      className="light"
+      content="img-src 'self' data:; script-src 'self'"
+    >
       <Providers>
         <body
           className={cn(
