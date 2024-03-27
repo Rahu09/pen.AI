@@ -12,7 +12,7 @@ export async function getUserSubscriptionPlan() {
   const { getUser } = getKindeServerSession();
   const user = getUser();
 
-  console.log("user", user);
+  // console.log("user", user);
 
   if (!user?.id) {
     return {
@@ -29,7 +29,7 @@ export async function getUserSubscriptionPlan() {
     },
   });
 
-  console.log("dbUser", dbUser);
+  // console.log("dbUser", dbUser);
 
   if (!dbUser) {
     return {
@@ -47,12 +47,11 @@ export async function getUserSubscriptionPlan() {
         Date.now()
   );
 
-  console.log(
-    isSubscribed,
-    dbUser.stripePriceId,
-    dbUser.stripeCurrentPeriodEnd
-  );
-  //hii
+  // console.log(
+  //   isSubscribed,
+  //   dbUser.stripePriceId,
+  //   dbUser.stripeCurrentPeriodEnd
+  // );
 
   const plan = isSubscribed
     ? PLANS.find((plan) => plan.price.priceIds.test === dbUser.stripePriceId)
@@ -65,13 +64,13 @@ export async function getUserSubscriptionPlan() {
     );
     isCanceled = stripePlan.cancel_at_period_end;
   }
-  console.log(
-    "plan",
-    plan,
-    dbUser.stripeSubscriptionId,
-    isCanceled,
-    isSubscribed
-  );
+  // console.log(
+  //   "plan",
+  //   plan,
+  //   dbUser.stripeSubscriptionId,
+  //   isCanceled,
+  //   isSubscribed
+  // );
 
   return {
     ...plan,

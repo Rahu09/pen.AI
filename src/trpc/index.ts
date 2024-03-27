@@ -89,6 +89,8 @@ export const appRouter = router({
       },
     });
 
+    console.log("stripeSession", stripeSession);
+
     return { url: stripeSession.url };
   }),
 
