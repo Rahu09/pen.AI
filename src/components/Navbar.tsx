@@ -9,6 +9,7 @@ import {
 import { ArrowRight } from "lucide-react";
 import UserAccountNav from "./UserAccountNav";
 import MobileNav from "./MobileNav";
+import { Button } from "./ui/moving-border";
 
 const Navbar = () => {
   const { getUser } = getKindeServerSession();
@@ -18,8 +19,11 @@ const Navbar = () => {
     <nav className="sticky h-14 inset-x-0 top-0 z-30 w-full border-b border-gray-200 bg-white/75 backdrop-blur-lg transition-all">
       <MaxWidthWrapper>
         <div className="flex h-14 items-center justify-between border-b border-zinc-200">
-          <Link href="/" className="flex z-40 font-semibold">
-            <span>quill.</span>
+          <Link href="/" className="flex z-40 ">
+            {/* <span>quill.</span> */}
+            <button className="px-4 py-2 font-semibold rounded-md border-none  text-neutarl-700 text-sm hover:shadow-[4px_4px_0px_0px_rgba(0,0,0)] transition duration-200">
+              <span>pen.AI</span>
+            </button>
           </Link>
 
           <MobileNav isAuth={!!user} />
@@ -27,29 +31,20 @@ const Navbar = () => {
           <div className="hidden items-center space-x-4 sm:flex">
             {!user ? (
               <>
-                <Link
-                  href="/pricing"
-                  className={buttonVariants({
-                    variant: "ghost",
-                    size: "sm",
-                  })}
-                >
-                  Pricing
+                <Link href="/pricing">
+                  <button className="px-4 py-2 font-semibold rounded-md border-none  text-neutarl-700 text-sm hover:shadow-[4px_4px_0px_0px_rgba(0,0,0)] transition duration-200">
+                    <span>Pricing</span>
+                  </button>
                 </Link>
-                <LoginLink
-                  className={buttonVariants({
-                    variant: "ghost",
-                    size: "sm",
-                  })}
-                >
-                  Sign in
+                <LoginLink>
+                  <button className="px-4 py-2 font-semibold rounded-md border-none  text-neutarl-700 text-sm hover:shadow-[4px_4px_0px_0px_rgba(0,0,0)] transition duration-200">
+                    <span>Sign in</span>
+                  </button>
                 </LoginLink>
-                <RegisterLink
-                  className={buttonVariants({
-                    size: "sm",
-                  })}
-                >
-                  Get started <ArrowRight className="ml-1.5 h-5 w-5" />
+                <RegisterLink>
+                  <Button containerClassName="h-10">
+                    Get started <ArrowRight className="ml-1.5 h-5 w-5" />
+                  </Button>
                 </RegisterLink>
               </>
             ) : (
