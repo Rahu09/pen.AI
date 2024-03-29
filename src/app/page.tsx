@@ -3,36 +3,78 @@ import Link from "next/link";
 import { ArrowRight } from "lucide-react";
 import { buttonVariants } from "@/components/ui/button";
 import Image from "next/image";
+import { BackgroundGradientAnimation } from "@/components/ui/background-gradient-animation";
+import { Button } from "@/components/ui/moving-border";
+import { TypewriterEffectSmooth } from "@/components/ui/typewriter-effect";
+import { HoverBorderGradient } from "@/components/ui/hover-border-gradient";
 
 export default function Home() {
+  const words = [
+    {
+      text: "Query",
+      className:
+        "max-w-4xl text-5xl font-bold md:text-6xl lg:text-7xl text-black",
+    },
+    {
+      text: "your",
+      className:
+        "max-w-4xl text-5xl font-bold md:text-6xl lg:text-7xl text-black",
+    },
+    {
+      text: "documents",
+      className:
+        "text-blue-600 max-w-4xl text-5xl font-bold md:text-6xl lg:text-7xl",
+    },
+    {
+      text: "in",
+      className:
+        "max-w-4xl text-5xl font-bold md:text-6xl lg:text-7xl text-black",
+    },
+    {
+      text: "seconds.",
+      className:
+        "max-w-4xl text-5xl font-bold md:text-6xl lg:text-7xl text-black",
+    },
+  ];
   return (
     <>
-      <MaxWidthWrapper className="mb-12 mt-28 sm:mt-40 flex flex-col items-center justify-center text-center">
-        <div className="mx-auto mb-4 flex max-w-fit items-center justify-center space-x-2 overflow-hidden rounded-full border border-gray-200 bg-white px-7 py-2 shadow-md backdrop-blur transition-all hover:border-gray-300 hover:bg-white/50">
-          <p className="text-sm font-semibold text-gray-700">
-            Quill is now public!
-          </p>
-        </div>
-        <h1 className="max-w-4xl text-5xl font-bold md:text-6xl lg:text-7xl">
-          Chat with your <span className="text-blue-600">documents</span> in
-          seconds.
-        </h1>
-        <p className="mt-5 max-w-prose text-zinc-700 sm:text-lg">
-          Quill allows you to have conversations with any PDF document. Simply
-          upload your file and start asking questions right away.
-        </p>
-
-        <Link
-          className={buttonVariants({
-            size: "lg",
-            className: "mt-5",
-          })}
-          href="/dashboard"
-          target="_blank"
+      <div className="">
+        <BackgroundGradientAnimation
+          containerClassName=" lg:m-10 h-[92 vh] lg:h-[85vh] lg:w-[95vw] lg:rounded-xl"
+          gradientBackgroundStart="#c7d2fe"
+          gradientBackgroundEnd="#e9d5ff"
+          firstColor="18, 113, 255"
+          secondColor="221, 74, 255"
+          thirdColor="100, 220, 255"
+          fourthColor="200, 50, 50"
+          fifthColor="140, 0, 160"
+          pointerColor="140, 0, 160"
         >
-          Get started <ArrowRight className="ml-2 h-5 w-5" />
-        </Link>
-      </MaxWidthWrapper>
+          <MaxWidthWrapper className="mb-12 mt-28 sm:mt-40 flex flex-col items-center justify-center text-center">
+            <Button
+              containerClassName=""
+              className="bg-transparent border-none text-sm font-semibold text-gray-700"
+              href="/dashboard"
+              target="_blank"
+            >
+              Quill is now public!
+            </Button>
+
+            <TypewriterEffectSmooth cursorClassName="" words={words} />
+            <p className="mt-5 max-w-prose text-gray-600 sm:text-lg">
+              Quill allows you to have conversations with any PDF document.
+              Simply upload your file and start asking questions right away.
+            </p>
+            <Button
+              containerClassName="mt-5 h-14"
+              href="/dashboard"
+              target="_blank"
+            >
+              Get started <ArrowRight className="ml-2 h-5 w-5" />
+            </Button>
+          </MaxWidthWrapper>
+        </BackgroundGradientAnimation>
+      </div>
 
       {/* value proposition section */}
       <div>
@@ -53,7 +95,10 @@ export default function Home() {
           <div>
             <div className="mx-auto max-w-6xl px-6 lg:px-8">
               <div className="mt-16 flow-root sm:mt-24">
-                <div className="-m-2 rounded-xl bg-gray-900/5 p-2 ring-1 ring-inset ring-gray-900/10 lg:-m-4 lg:rounded-2xl lg:p-4">
+                <HoverBorderGradient
+                  containerClassName=" -m-1 rounded-xl bg-gray-900/5 p-2 ring-1 ring-inset ring-gray-900/10 lg:-m-4 lg:rounded-2xl lg:p-1"
+                  className="bg-transparent"
+                >
                   <Image
                     src="/dashboard-preview.jpg"
                     alt="product preview"
@@ -62,7 +107,7 @@ export default function Home() {
                     quality={100}
                     className="rounded-md bg-white p-2 sm:p-8 md:p-20 shadow-2xl ring-1 ring-gray-900/10"
                   />
-                </div>
+                </HoverBorderGradient>
               </div>
             </div>
           </div>
@@ -141,17 +186,22 @@ export default function Home() {
           </li>
         </ol>
 
-        <div className="mx-auto max-w-6xl px-6 lg:px-8">
-          <div className="mt-16 flow-root sm:mt-24">
-            <div className="-m-2 rounded-xl bg-gray-900/5 p-2 ring-1 ring-inset ring-gray-900/10 lg:-m-4 lg:rounded-2xl lg:p-4">
-              <Image
-                src="/file-upload-preview.jpg"
-                alt="uploading preview"
-                width={1419}
-                height={732}
-                quality={100}
-                className="rounded-md bg-white p-2 sm:p-8 md:p-20 shadow-2xl ring-1 ring-gray-900/10"
-              />
+        <div>
+          <div className="mx-auto max-w-6xl px-6 lg:px-8">
+            <div className="mt-16 flow-root sm:mt-24">
+              <HoverBorderGradient
+                containerClassName=" -m-1 rounded-xl bg-gray-900/5 p-2 ring-1 ring-inset ring-gray-900/10 lg:-m-4 lg:rounded-2xl lg:p-1"
+                className="bg-transparent"
+              >
+                <Image
+                  src="/file-upload-preview.jpg"
+                  alt="uploading preview"
+                  width={1419}
+                  height={732}
+                  quality={100}
+                  className="rounded-md bg-white p-2 sm:p-8 md:p-20 shadow-2xl ring-1 ring-gray-900/10"
+                />
+              </HoverBorderGradient>
             </div>
           </div>
         </div>
