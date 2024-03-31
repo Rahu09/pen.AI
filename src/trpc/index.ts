@@ -10,10 +10,14 @@ import { PLANS } from "@/config/stripe";
 
 export const appRouter = router({
   authCallback: publicProcedure.query(async () => {
+    // console.log("authCallback");
+
     const { getUser } = getKindeServerSession();
     const user = getUser();
     const userEmail = user.email || "";
     const userId = user.id || "";
+
+    // console.log("user", user);
 
     if (!userId || !userEmail) throw new TRPCError({ code: "UNAUTHORIZED" });
 
@@ -23,6 +27,8 @@ export const appRouter = router({
         id: userId,
       },
     });
+
+    console.log("dbUser", dbUser);
 
     if (!dbUser) {
       // create user in db
@@ -50,7 +56,7 @@ export const appRouter = router({
     const { userId } = ctx;
 
     const billingUrl = absoluteUrl("/dashboard/billing");
-    console.log("billingUrl", billingUrl);
+    // console.log("billingUrl", billingUrl);
 
     if (!userId) throw new TRPCError({ code: "UNAUTHORIZED" });
 
@@ -90,7 +96,7 @@ export const appRouter = router({
       },
     });
 
-    console.log("stripeSession", stripeSession);
+    // console.log("stripeSession", stripeSession);
 
     return { url: stripeSession.url };
   }),
