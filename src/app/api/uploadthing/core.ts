@@ -93,6 +93,7 @@ const onUploadComplete = async ({
           id: createdFile.id,
         },
       });
+    } else {
     }
 
     // vectorize and index entire document
@@ -107,14 +108,25 @@ const onUploadComplete = async ({
       pineconeIndex,
     });
 
-    await db.file.update({
-      data: {
-        uploadStatus: "SUCCESS",
-      },
-      where: {
-        id: createdFile.id,
-      },
-    });
+    if ((isSubscribed && isProExceeded) || (!isSubscribed && isFreeExceeded)) {
+      await db.file.update({
+        data: {
+          uploadStatus: "FAILED",
+        },
+        where: {
+          id: createdFile.id,
+        },
+      });
+    } else {
+      await db.file.update({
+        data: {
+          uploadStatus: "SUCCESS",
+        },
+        where: {
+          id: createdFile.id,
+        },
+      });
+    }
   } catch (err) {
     await db.file.update({
       data: {
