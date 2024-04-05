@@ -22,6 +22,10 @@ Pen.AI utilizes AI technologies to enable users to interact with PDF documents i
 
 Check out our video demo to see Pen.AI in action:
 
+
+https://github.com/Rahu09/pen.AI/assets/89607570/a451d7d0-1eb1-4717-b573-793aadf0c1a1
+
+
 ## Getting Started
 
 To get started with Pen.AI, follow these steps:
