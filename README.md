@@ -1,36 +1,51 @@
-This is a [Next.js](https://nextjs.org/) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
+# Pen.AI
+
+Pen.AI is a cutting-edge SaaS platform revolutionizing PDF document interaction through the power of artificial intelligence (AI). Developed with a focus on seamless user experience and advanced functionality, Pen.AI offers a comprehensive solution for managing and interacting with PDF documents like never before.
+
+## Overview
+
+Pen.AI utilizes AI technologies to enable users to interact with PDF documents in innovative ways. Leveraging modern web development frameworks and cloud services, Pen.AI offers a responsive and intuitive platform for users to upload, manage, and analyze PDF documents with ease.
+
+## Features
+
+- **Easy Authentication using Kinde**: Utilize kinde auth for fast and easy authentication.
+- **Optimistic Update and Infinite Query**: Applied UI features like Optimistic Update and Infinite Query for seamless user expirence.
+- **AI-Powered Document Interaction**: Utilize OpenAI api to analyze and interact with PDF documents in real-time.
+- **Next.js for Frontend and trpc for Backend**: Built with Next.js for efficient frontend and trpc for backend development.
+- **Prisma and PostgreSQL for Database Interaction**: Seamlessly interact with databases for efficient data storage and retrieval.
+- **Tailwind, Shadcn & aceternity ui for Responsive Interface**: Crafted with Tailwind CSS and Shadcn and Aceternity UI for a visually appealing and responsive user interface.
+- **Uploadthing for File Uploading**: Efficiently upload and manage PDF files using Uploadthing(Thanks Theo!!).
+- **Pinecone for AI-Powered PDF Query Capabilities**: Enable advanced search and query capabilities using Pinecone's vector database.
+- **Stripe Integration for Subscription Payments**: Seamlessly manage subscription payments using Stripe for uninterrupted access to Pen.AI's full potential.
+
+## Video Demo
+
+Check out our video demo to see Pen.AI in action:
 
 ## Getting Started
 
-First, run the development server:
+To get started with Pen.AI, follow these steps:
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+1. Clone the repository: `git clone https://github.com/Rahu09/pen.AI.git`
+2. Install dependencies: `npm install`
+3. Configure environment variables:
+   - Set up environment variables for database connection (Prisma, PostgreSQL), Uploadthing, Pinecone, and Stripe & Kinde Auth.
+4. Run the development server: `npm run dev`
+5. Access Pen.AI via your web browser at `http://localhost:3000`
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## Contributing
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+Contributions to Pen.AI are welcome! If you have ideas for new features, improvements, or bug fixes, feel free to open an issue or submit a pull request.
 
-This project uses [`next/font`](https://nextjs.org/docs/basic-features/font-optimization) to automatically optimize and load Inter, a custom Google Font.
+## License
 
-## Learn More
+This project is licensed under the [MIT License](LICENSE).
 
-To learn more about Next.js, take a look at the following resources:
+## Contact
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+For inquiries or feedback, please contact:
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js/) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/deployment) for more details.
+Rahul Tiwari  
+Email: tiwarirahul0809@gmail.com  
+Phone: +91 7024560017  
+Location: Bangalore, India
