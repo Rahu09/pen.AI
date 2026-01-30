@@ -35,6 +35,7 @@ const billingForm = ({ subscriptionPlan }: BillingFormProps) => {
         }
       },
     });
+
   return (
     <MaxWidthWrapper>
       <form
