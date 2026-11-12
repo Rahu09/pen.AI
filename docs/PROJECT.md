@@ -119,9 +119,9 @@ Names only. Values live in `.env` (git-ignored). Template: `.env.example`.
 | Service | State |
 |---|---|
 | Postgres | `DATABASE_URL` points at ElephantSQL, which has been discontinued. Replacement is Neon (D-004); not created yet. Not yet re-verified by connecting. |
-| Pinecone | Client is configured for the legacy `gcp-starter` environment with index `quill`. Being removed (D-008): vectors move to `pgvector` in Neon. The key is in the public repo and must be revoked. |
+| Pinecone | Client is configured for the legacy `gcp-starter` environment with index `quill`. Being removed (D-008): vectors move to `pgvector` in Neon. The key was public in the repo until the 2026-11-13 rewrite (D-011) and must be revoked; `src/lib/pinecone.ts` now holds a placeholder. |
 | OpenAI | `gpt-3.5-turbo` is hardcoded in the chat route. Staying on OpenAI (D-005); model to be replaced in phase 2. |
-| Kinde | Client secret was committed on 2023-10-01 and is still in git history. Must be rotated. |
+| Kinde | Client secret was public in git history from 2023-10-01 until the 2026-11-13 rewrite (D-011). The same value is still in use in `.env`, so it must be rotated. |
 | Stripe | Only a test-mode price ID is configured; the production ID is empty. |
 | UploadThing | File URL is built from a hardcoded S3 host instead of the URL UploadThing returns. |
 

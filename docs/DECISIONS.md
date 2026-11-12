@@ -209,6 +209,11 @@ Entry format:
   - It does not replace revoking the Pinecone key and rotating the Kinde
     secret: GitHub can keep serving old commits by hash until it garbage
     collects them, and anyone may already have copied the values.
+- Outcome (2026-11-13): Run locally by Claude with `git filter-repo`, at the
+  owner's explicit request (a one-off exception to D-003; the push stays with
+  the owner). 38 commits became 37 (the "Delete .env" commit became empty and
+  was dropped). All hashes changed, so the hashes quoted above are pre-rewrite:
+  `c86c60a` is now `e629269` and `4648d9f` is now `b4511f2`. Not yet pushed.
 
 ---
 

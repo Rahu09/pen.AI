@@ -27,7 +27,7 @@ Entry format:
 - Found:
   - The Pinecone API key is hardcoded in `src/lib/pinecone.ts` in a public repo.
   - A `.env` containing the Kinde client secret was committed on 2023-10-01
-    (commit `4648d9f`) and removed in the next commit; it is still in history.
+    (pre-rewrite commit `4648d9f`) and removed in the next commit.
   - `DATABASE_URL` points at ElephantSQL, which has been discontinued.
   - During the analysis a redaction command failed and the database connection
     string was printed into that chat's local tool output. Treat it as exposed.
@@ -42,13 +42,19 @@ Entry format:
   Pinecone removed (D-008). Keep LangChain and migrate it (D-009). The owner
   said the project is being revived as interview material.
   Git history: first "leave it" (D-010), then superseded by "rewrite it"
-  (D-011). The rewrite was not run in this chat: the working tree was dirty and
-  the docs had not been committed yet.
+  (D-011). After the owner committed the docs, Claude ran the rewrite locally
+  with `git filter-repo`: `.env` removed from all commits, Pinecone key and
+  Kinde secret values replaced with placeholders, both stashes kept. Verified
+  that no commit, stash or stored object contains either value. All commit
+  hashes changed. A full backup is in `E:\production\pen.AI-backup-2026-11-13`.
+  The force-push has NOT been done; it is the owner's.
+- Found during the rewrite: the Kinde client secret in the current `.env` is
+  the same value that was committed in 2023, so it has never been rotated.
 - Open: No open decisions. Revoking the Pinecone
   key, rotating the Kinde secret and creating the Neon project have to be done
   by the owner.
-- Next: ROADMAP phase 2. Owner revokes the Pinecone key, rotates the Kinde
-  secret and creates the Neon project. Then delete the hardcoded key, add
+- Next: Owner force-pushes `main`, then ROADMAP phase 2. Owner revokes the
+  Pinecone key, rotates the Kinde secret and creates the Neon project. Then delete the hardcoded key, add
   `directUrl`, run migrations, and rewrite ingest and retrieval on current
   LangChain with its pgvector store. Explain each retrieval step (embedding,
   storing, similarity search) while building it, so the owner can describe what

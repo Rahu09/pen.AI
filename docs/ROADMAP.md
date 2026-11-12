@@ -21,10 +21,12 @@ Owner actions (need the service dashboards):
 
 History rewrite (D-011), after the docs are committed and the tree is clean:
 
-- [ ] Back up the repo (`git bundle`) and decide what to do with the two local stashes
-- [ ] Remove `.env` from all commits and replace the Pinecone key with a placeholder in all commits
-- [ ] Verify no commit contains either secret
-- [ ] Owner: force-push `main`
+- [x] Back up the repo (full `.git` copy, bundle and `.env` in `E:\production\pen.AI-backup-2026-11-13`)
+- [x] Remove `.env` from all commits and replace the Pinecone key and Kinde secret values with placeholders in all commits (both stashes rewritten and kept)
+- [x] Verify no commit, stash or stored object contains either value
+- [ ] Owner: force-push `main` (`git push --force -u origin main`)
+- [ ] Owner: delete the backup folder once the push is confirmed (it still contains the secrets)
+- [ ] Owner, optional: ask GitHub Support to purge the old commits, which stay reachable by hash until GitHub garbage-collects them
 
 Code:
 
