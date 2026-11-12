@@ -15,8 +15,6 @@ import { Button } from "./ui/button";
 import { Loader2 } from "lucide-react";
 import { format } from "date-fns";
 
-
-
 interface BillingFormProps {
   subscriptionPlan: Awaited<ReturnType<typeof getUserSubscriptionPlan>>;
 }
@@ -73,7 +71,7 @@ const billingForm = ({ subscriptionPlan }: BillingFormProps) => {
                   : "Your plan renews on "}
                 {format(
                   new Date(subscriptionPlan.stripeCurrentPeriodEnd!),
-                  "dd.MM.yyyy"
+                  "dd.MM.yyyy",
                 )}
                 .
               </p>

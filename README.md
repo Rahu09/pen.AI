@@ -31,11 +31,13 @@ https://github.com/Rahu09/pen.AI/assets/89607570/a451d7d0-1eb1-4717-b573-793aadf
 To get started with Pen.AI, follow these steps:
 
 1. Clone the repository: `git clone https://github.com/Rahu09/pen.AI.git`
-2. Install dependencies: `npm install`
+2. Install dependencies: `pnpm install`
 3. Configure environment variables:
-   - Set up environment variables for database connection (Prisma, PostgreSQL), Uploadthing, Pinecone, and Stripe & Kinde Auth.
-4. Run the development server: `npm run dev`
+   - Copy `.env.example` to `.env` and fill in the values for the database (Prisma, PostgreSQL), Kinde Auth, Uploadthing, Pinecone, OpenAI and Stripe.
+4. Run the development server: `pnpm dev`
 5. Access Pen.AI via your web browser at `http://localhost:3000`
+
+Project documentation lives in [`docs/`](docs/): architecture in `PROJECT.md`, planned work in `ROADMAP.md`, and the decision log in `DECISIONS.md`.
 
 ## Contributing
 
