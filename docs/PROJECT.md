@@ -195,10 +195,10 @@ from `.env`.
 | Service | State |
 |---|---|
 | Postgres | Neon (D-004), Free plan, AWS Singapore. Both migrations applied, pgvector enabled. |
-| Pinecone | Removed from the code (D-008). The old key was public until the history rewrite (D-011) and should be revoked. |
+| Pinecone | Removed from the code (D-008). The old key was public until the history rewrite (D-011); revoked by the owner (2026-11-14). |
 | Google Gemini | Chat and embeddings (D-013). Both models verified against the live API on 2026-11-13. Free tier, which has rate limits. |
 | OpenAI | No longer used (D-013). The old key in `.env` was already invalid. |
-| Kinde | Sign-in from localhost works (2026-11-13). SDK 2.13 since 2026-11-13 (1.8 printed tokens to the server log on sign-in). The client secret was public in git history from 2023-10-01 until the 2026-11-13 rewrite (D-011); whether it has been rotated since is not known. |
+| Kinde | Sign-in from localhost works (2026-11-13). SDK 2.13 since 2026-11-13 (1.8 printed tokens to the server log on sign-in). The client secret was public in git history from 2023-10-01 until the 2026-11-13 rewrite (D-011); the owner reports it rotated (2026-11-14). |
 | Stripe | Only a test-mode price ID is configured; the production ID is empty. Keys not re-verified. |
 | UploadThing | SDK 7, token set (2026-11-13). Upload, processing and delete verified from localhost. Storage cleaned on 2026-11-13: only files with a database row remain. |
 | Vercel | Needs: new `DATABASE_URL`, `DIRECT_URL`, `GOOGLE_API_KEY`; Node 22+; `prisma migrate deploy` run once against Neon. |

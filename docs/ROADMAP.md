@@ -18,10 +18,10 @@ two are done:
 
 - [x] Create a Neon project (D-004); put the pooled string in `DATABASE_URL` and the direct string in `DIRECT_URL` in `.env`
 - [x] Create a Gemini API key at https://aistudio.google.com/apikey and put it in `.env` as `GOOGLE_API_KEY` (D-013)
-- [ ] Revoke the Pinecone API key; delete `PINECONE_API_KEY` and `OPENAI_API_KEY` from `.env` (D-008, D-013)
-- [ ] Rotate the Kinde client secret
+- [x] Revoke the Pinecone API key; delete `PINECONE_API_KEY` and `OPENAI_API_KEY` from `.env` (D-008, D-013)
+- [x] Rotate the Kinde client secret (owner: treat as done, 2026-11-14)
 - [ ] On Vercel: set `DATABASE_URL`, `DIRECT_URL`, `GOOGLE_API_KEY`, `UPLOADTHING_TOKEN`; remove `PINECONE_API_KEY`, `OPENAI_API_KEY`, `UPLOADTHING_SECRET`, `UPLOADTHING_APP_ID`; use Node 22+
-- [ ] Owner: delete `UPLOADTHING_SECRET` and `UPLOADTHING_APP_ID` from `.env` (unused since UploadThing 7)
+- [x] Owner: delete `UPLOADTHING_SECRET` and `UPLOADTHING_APP_ID` from `.env` (unused since UploadThing 7)
 
 History rewrite (D-011):
 
@@ -30,7 +30,7 @@ History rewrite (D-011):
 - [x] Verify no commit, stash or stored object contains either value
 - [x] Owner: force-push `main`
 - [x] Owner: delete the backup folder
-- [ ] Owner, optional: ask GitHub Support to purge the old commits, which stay reachable by hash until GitHub garbage-collects them
+- [x] (Dropped by the owner, 2026-11-14) Owner, optional: ask GitHub Support to purge the old commits, which stay reachable by hash until GitHub garbage-collects them
 
 Code (done 2026-11-13; database and Gemini paths verified by script the same day):
 
