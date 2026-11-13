@@ -4,7 +4,7 @@ import { PropsWithChildren, useState } from "react";
 import { ThemeProvider } from "next-themes";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { trpc } from "@/app/_trpc/client";
-import { httpBatchLink } from "@trpc/react-query";
+import { httpBatchLink } from "@trpc/client";
 import { absoluteUrl } from "@/lib/utils";
 
 const Providers = ({ children }: PropsWithChildren) => {

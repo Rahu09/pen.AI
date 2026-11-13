@@ -1,6 +1,6 @@
 "use client";
 
-import { Suspense } from "react";
+import { Suspense, useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { trpc } from "@/app/_trpc/client";
 import { Loader2 } from "lucide-react";
@@ -10,17 +10,23 @@ function AuthCallback() {
   const router = useRouter();
   const origin = useSearchParams().get("origin");
 
-  trpc.authCallback.useQuery(undefined, {
-    onSuccess: ({ success }) => {
-      // user is synced to db
-      if (success) router.push(afterSignInPath(origin));
-    },
-    onError: (err) => {
-      if (err.data?.code === "UNAUTHORIZED") router.push("/sign-in");
-    },
-    retry: true,
+  const { data, error } = trpc.authCallback.useQuery(undefined, {
+    // Keep trying while the session settles, but not when the server says
+    // there is no session at all: that will not fix itself.
+    retry: (_count, err) => err.data?.code !== "UNAUTHORIZED",
     retryDelay: 500,
   });
+
+  // React Query 5 removed onSuccess / onError from queries; redirects are
+  // side effects of the result, so they live in an effect.
+  useEffect(() => {
+    // user is synced to db
+    if (data?.success) router.push(afterSignInPath(origin));
+  }, [data, origin, router]);
+
+  useEffect(() => {
+    if (error?.data?.code === "UNAUTHORIZED") router.push("/sign-in");
+  }, [error, router]);
 
   return <Waiting />;
 }

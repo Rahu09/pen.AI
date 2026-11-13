@@ -27,7 +27,7 @@ const BillingForm = ({ subscriptionPlan }: BillingFormProps) => {
   const plan = usePlan();
   const { toast } = useToast();
 
-  const { mutate: createStripeSession, isLoading } =
+  const { mutate: createStripeSession, isPending } =
     trpc.createStripeSession.useMutation({
       onSuccess: ({ url }) => {
         if (url) window.location.href = url;
@@ -105,8 +105,8 @@ const BillingForm = ({ subscriptionPlan }: BillingFormProps) => {
             </CardContent>
 
             <CardFooter className="flex flex-col items-start gap-3 border-t pt-6 sm:flex-row sm:items-center sm:justify-between">
-              <Button type="submit" disabled={isLoading}>
-                {isLoading ? (
+              <Button type="submit" disabled={isPending}>
+                {isPending ? (
                   <Loader2
                     className="mr-2 h-4 w-4 animate-spin"
                     aria-hidden="true"

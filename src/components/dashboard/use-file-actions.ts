@@ -8,7 +8,7 @@ import { useToast } from "@/components/ui/use-toast";
  * if the server rejects the change.
  */
 export function useFileActions() {
-  const utils = trpc.useContext();
+  const utils = trpc.useUtils();
   const { toast } = useToast();
 
   const rename = trpc.renameFile.useMutation({

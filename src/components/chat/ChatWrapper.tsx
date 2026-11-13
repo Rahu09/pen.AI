@@ -47,8 +47,11 @@ const ChatWrapper = ({ fileId }: chatWrapperProps) => {
       fileId,
     },
     {
-      refetchInterval: (data) =>
-        data?.status === "SUCCESS" || data?.status === "FAILED" ? false : 500,
+      // React Query 5 passes the query, not its data.
+      refetchInterval: (query) => {
+        const status = query.state.data?.status;
+        return status === "SUCCESS" || status === "FAILED" ? false : 500;
+      },
     }
   );
 

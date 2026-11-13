@@ -27,7 +27,7 @@ export const ChatContextProvider = ({ fileId, children }: Props) => {
   const [message, setMessage] = useState<string>("");
   const [isLoading, setIsLoading] = useState<boolean>(false);
 
-  const utils = trpc.useContext();
+  const utils = trpc.useUtils();
 
   const { toast } = useToast();
 
@@ -57,7 +57,10 @@ export const ChatContextProvider = ({ fileId, children }: Props) => {
       await utils.getFileMessages.cancel();
 
       // step 2
-      const previousMessages = utils.getFileMessages.getInfiniteData();
+      const previousMessages = utils.getFileMessages.getInfiniteData({
+        fileId,
+        limit: INFINITE_QUERY_LIMIT,
+      });
 
       // step 3
       utils.getFileMessages.setInfiniteData(
@@ -70,21 +73,23 @@ export const ChatContextProvider = ({ fileId, children }: Props) => {
             };
           }
 
-          let newPages = [...old.pages];
+          const newPages = [...old.pages];
+          const latestPage = newPages[0]!;
 
-          let latestPage = newPages[0]!;
-
-          latestPage.messages = [
-            {
-              createdAt: new Date().toISOString(),
-              id: crypto.randomUUID(),
-              text: message,
-              isUserMessage: true,
-            },
-            ...latestPage.messages,
-          ];
-
-          newPages[0] = latestPage;
+          // A new page object, not an edit of the cached one, so the
+          // snapshot in previousMessages stays as it was for a rollback.
+          newPages[0] = {
+            ...latestPage,
+            messages: [
+              {
+                createdAt: new Date().toISOString(),
+                id: crypto.randomUUID(),
+                text: message,
+                isUserMessage: true,
+              },
+              ...latestPage.messages,
+            ],
+          };
 
           return {
             ...old,
@@ -95,10 +100,7 @@ export const ChatContextProvider = ({ fileId, children }: Props) => {
 
       setIsLoading(true);
 
-      return {
-        previousMessages:
-          previousMessages?.pages.flatMap((page) => page.messages) ?? [],
-      };
+      return { previousMessages };
     },
     onSuccess: async (stream) => {
       setIsLoading(false);
@@ -178,9 +180,10 @@ export const ChatContextProvider = ({ fileId, children }: Props) => {
 
     onError: (_, __, context) => {
       setMessage(backupMessage.current);
-      utils.getFileMessages.setData(
-        { fileId },
-        { messages: context?.previousMessages ?? [] }
+      // Put back the pages as they were before the optimistic message.
+      utils.getFileMessages.setInfiniteData(
+        { fileId, limit: INFINITE_QUERY_LIMIT },
+        context?.previousMessages
       );
     },
     onSettled: async () => {

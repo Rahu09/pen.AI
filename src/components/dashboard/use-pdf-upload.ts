@@ -22,7 +22,7 @@ const isPdf = (file: File) =>
 export function usePdfUpload() {
   const plan = usePlan();
   const router = useRouter();
-  const utils = trpc.useContext();
+  const utils = trpc.useUtils();
   const [state, setState] = useState<UploadState>({ phase: "idle" });
 
   const { data: usage } = trpc.getUploadUsage.useQuery();

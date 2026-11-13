@@ -37,7 +37,7 @@ export default function Dashboard() {
     refetch,
   } = trpc.getUserFiles.useQuery(undefined, {
     // keep checking while a file is being processed, so its badge clears
-    refetchInterval: (data) => (data?.some(isProcessing) ? 2000 : false),
+    refetchInterval: (q) => (q.state.data?.some(isProcessing) ? 2000 : false),
   });
 
   const [query, setQuery] = useState("");
@@ -160,7 +160,7 @@ export default function Dashboard() {
       />
       <DeleteFileDialog
         file={deleting}
-        isDeleting={remove.isLoading}
+        isDeleting={remove.isPending}
         onClose={() => setDeleting(null)}
         onDelete={(id) => remove.mutate({ id })}
       />
