@@ -20,7 +20,8 @@ two are done:
 - [x] Create a Gemini API key at https://aistudio.google.com/apikey and put it in `.env` as `GOOGLE_API_KEY` (D-013)
 - [ ] Revoke the Pinecone API key; delete `PINECONE_API_KEY` and `OPENAI_API_KEY` from `.env` (D-008, D-013)
 - [ ] Rotate the Kinde client secret
-- [ ] On Vercel: set `DATABASE_URL`, `DIRECT_URL`, `GOOGLE_API_KEY`; remove `PINECONE_API_KEY` and `OPENAI_API_KEY`; use Node 22+
+- [ ] On Vercel: set `DATABASE_URL`, `DIRECT_URL`, `GOOGLE_API_KEY`, `UPLOADTHING_TOKEN`; remove `PINECONE_API_KEY`, `OPENAI_API_KEY`, `UPLOADTHING_SECRET`, `UPLOADTHING_APP_ID`; use Node 22+
+- [ ] Owner: delete `UPLOADTHING_SECRET` and `UPLOADTHING_APP_ID` from `.env` (unused since UploadThing 7)
 
 History rewrite (D-011):
 
@@ -53,7 +54,8 @@ Still to do once the owner actions are done:
 - [x] Upload failed in the browser: the code downloaded the PDF from an old S3 host that now answers 403. Fixed by using the URL UploadThing returns (`file.url`)
 - [x] `.env.example` restored to the updated template
 - [x] Upload in the browser after the fix (owner): file is `SUCCESS`, 6 chunks stored with embeddings, viewer URL on `utfs.io`
-- [ ] In the browser: ask a question in the chat (no messages are in the database yet, so the chat route has not been exercised over HTTP), delete a file, upgrade through Stripe
+- [x] In the browser: ask a question in the chat (2026-11-13, on a generated test PDF: right answer from page 1), delete a file (row, messages and the stored PDF removed)
+- [ ] In the browser: upgrade through Stripe
 
 ## Phase 3: Dependency upgrade
 
@@ -64,7 +66,7 @@ Pinecone removal are in phase 2, because the retrieval code is rewritten there.
 - [ ] Next.js 15 or 16 and React 19 (async request APIs, `params` as promise)
 - [ ] tRPC 10 to 11 and TanStack Query 4 to 5
 - [x] Kinde SDK 1.8 to 2.13: `getUser()` awaited everywhere, `handleAuth()` route, link components from `/components`, `withAuth` middleware. SDK 1.8's token logging is gone
-- [ ] UploadThing 5 to 7. Blocked on the owner: v7 replaces `UPLOADTHING_SECRET` and `UPLOADTHING_APP_ID` with one `UPLOADTHING_TOKEN` from the UploadThing dashboard (API Keys page)
+- [x] UploadThing 5 to 7.7: `createRouteHandler`, `UTApi`, `file.ufsUrl`, `awaitServerData: false`; one `UPLOADTHING_TOKEN` replaces the secret and app id
 - [ ] Prisma and Stripe to current; pin a current Stripe API version
 - [x] pdf.js worker served from our own build instead of the cdnjs URL; `react-pdf` 7.7.3 and `pdfjs-dist` 3.11.174 pinned exactly (they must match)
 - [x] PDF viewer and fullscreen view were blank on Next 14 (`react-resize-detector` reported no width); now measured with Mantine's `useElementSize`, and `react-resize-detector` removed
@@ -113,9 +115,11 @@ divider, PDF / Chat tabs.
 
 Not yet checked:
 
-- [ ] Upload from the button and by drag and drop; the quota message
-- [ ] Deleting a file (also removes it from UploadThing)
-- [ ] Asking a question: messages in the restyled chat
+- [~] Upload from the button works (UploadThing 7, 2026-11-13); drag and drop and the quota message not yet checked
+- [x] Deleting a file (also removes it from UploadThing; checked through `UTApi.listFiles`)
+- [x] Asking a question: messages in the restyled chat
+- [ ] Answers can start with the literal page label ("[Page 1]") copied from the prompt context. Adjust the prompt in `src/app/api/message/route.ts` (or turn it into the "cite the page" feature)
+- [ ] UploadThing storage holds about 24 files while the database has 1: uploads deleted before delete removed them from storage. Owner may clear them in the UploadThing dashboard
 - [x] Owner's review of the flat design: they preferred the original look (D-015)
 - [x] Original colours and motion brought back as "ink on aurora" (D-015): landing, navbar, footer, pricing, app shell, Files, billing, chat bubbles
 - [x] Aceternity components and `framer-motion` removed (the aurora and the typed headline were rewritten in CSS); `public/dashboard-preview.jpg` and `public/file-upload-preview.jpg` deleted

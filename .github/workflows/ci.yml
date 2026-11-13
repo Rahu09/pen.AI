@@ -32,8 +32,9 @@ jobs:
       KINDE_SITE_URL: http://localhost:3000
       KINDE_POST_LOGOUT_REDIRECT_URL: http://localhost:3000
       KINDE_POST_LOGIN_REDIRECT_URL: http://localhost:3000/dashboard
-      UPLOADTHING_SECRET: sk_live_ci
-      UPLOADTHING_APP_ID: ci
+      # Base64 of {"apiKey":"sk_live_ci_placeholder","appId":"ci","regions":["sea1"]}:
+      # the right shape for UploadThing, with no real key in it.
+      UPLOADTHING_TOKEN: eyJhcGlLZXkiOiJza19saXZlX2NpX3BsYWNlaG9sZGVyIiwiYXBwSWQiOiJjaSIsInJlZ2lvbnMiOlsic2VhMSJdfQ==
       GOOGLE_API_KEY: ci
       STRIPE_SECRET_KEY: sk_test_ci
       STRIPE_WEBHOOK_SECRET: whsec_ci

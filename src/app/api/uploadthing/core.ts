@@ -41,7 +41,7 @@ const onUploadComplete = async ({
   file: {
     key: string;
     name: string;
-    url: string;
+    ufsUrl: string;
   };
 }) => {
   const isFileExist = await db.file.findFirst({
@@ -58,8 +58,10 @@ const onUploadComplete = async ({
       name: file.name,
       userId: metadata.userId,
       // The address UploadThing serves the file from. Used by the PDF viewer
-      // in the browser and by the processing step below.
-      url: file.url,
+      // in the browser and by the processing step below. (`ufsUrl` replaced
+      // `url` in UploadThing 7; old rows keep their utfs.io URLs, which
+      // UploadThing still serves.)
+      url: file.ufsUrl,
       uploadStatus: "PROCESSING",
     },
   });
@@ -70,7 +72,7 @@ const onUploadComplete = async ({
     });
 
   try {
-    const response = await fetch(file.url);
+    const response = await fetch(file.ufsUrl);
 
     if (!response.ok) {
       throw new Error(`Could not download the uploaded PDF: ${response.status}`);
@@ -116,11 +118,17 @@ const onUploadComplete = async ({
   }
 };
 
+// awaitServerData: false lets the browser's upload finish as soon as the
+// file is stored, instead of waiting for onUploadComplete (download, embed,
+// store), which can take a while. The browser then polls `getFile` and the
+// file page shows the processing state.
+const routeOptions = { awaitServerData: false } as const;
+
 export const ourFileRouter = {
-  freePlanUploader: f({ pdf: { maxFileSize: "4MB" } })
+  freePlanUploader: f({ pdf: { maxFileSize: "4MB" } }, routeOptions)
     .middleware(middleware)
     .onUploadComplete(onUploadComplete),
-  proPlanUploader: f({ pdf: { maxFileSize: "16MB" } })
+  proPlanUploader: f({ pdf: { maxFileSize: "16MB" } }, routeOptions)
     .middleware(middleware)
     .onUploadComplete(onUploadComplete),
 } satisfies FileRouter;

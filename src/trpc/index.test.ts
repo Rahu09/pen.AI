@@ -27,7 +27,11 @@ vi.mock("@kinde-oss/kinde-auth-nextjs/server", () => ({
   getKindeServerSession: () => ({ getUser: mocks.getUser }),
 }));
 vi.mock("@/db", () => ({ db: mocks.db }));
-vi.mock("uploadthing/server", () => ({ utapi: { deleteFiles: mocks.deleteFiles } }));
+vi.mock("uploadthing/server", () => ({
+  UTApi: class {
+    deleteFiles = mocks.deleteFiles;
+  },
+}));
 vi.mock("@/lib/stripe", () => ({ stripe: {}, getUserSubscriptionPlan: vi.fn() }));
 
 import { appRouter } from "./index";

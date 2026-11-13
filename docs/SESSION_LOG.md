@@ -15,6 +15,31 @@ Entry format:
 
 ---
 
+## 2026-11-13: UploadThing 7 (same chat as below)
+
+- Asked: the owner added `UPLOADTHING_TOKEN`; do the UploadThing upgrade.
+- Done:
+  - `uploadthing` 5.7 to 7.7.4, `@uploadthing/react` 5.6 to 7.3.3.
+  - `route.ts`: `createRouteHandler`. `src/lib/uploadthing.ts`: helpers
+    from `@uploadthing/react`. `core.ts`: `file.ufsUrl` instead of
+    `file.url`, and `awaitServerData: false` so the browser does not wait
+    for embedding to finish. tRPC: `new UTApi()` instead of `utapi`.
+  - `.env.example` and the CI workflow use `UPLOADTHING_TOKEN` (CI has a
+    well-formed dummy token, no real key).
+- Verified: type-check, lint, 43 tests. Token checked for shape (field
+  names only, value not printed). In the browser, with a PDF generated in
+  the page: upload (0 to 100%, then the file page), processing reached
+  `SUCCESS` reading from `ufs.sh`, the viewer rendered it, and the chat
+  answered a question from it (first time the chat route ran over HTTP).
+  Deleting it from the Files page removed the row, its messages and the
+  stored PDF (checked with `UTApi.listFiles`).
+- Not run: `pnpm build`. Port 3000 had a dev server Claude did not start
+  (since 19:23), so building was skipped; CI builds on the next push.
+- Found: answers can begin with the literal "[Page 1]" label from the
+  prompt; about 24 orphaned files in UploadThing storage. Both in ROADMAP.
+- Next: owner deletes `UPLOADTHING_SECRET` and `UPLOADTHING_APP_ID` from
+  `.env` and checks CI after pushing. Then Prisma and Stripe.
+
 ## 2026-11-13: Dependency upgrades, first batch (same chat as below)
 
 - Asked: start the remaining dependency upgrades.

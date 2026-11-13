@@ -7,7 +7,10 @@ import { INFINITE_QUERY_LIMIT } from "@/config/infinite-query";
 import { absoluteUrl } from "@/lib/utils";
 import { getUserSubscriptionPlan, stripe } from "@/lib/stripe";
 import { PLANS, startOfQuotaPeriod } from "@/config/stripe";
-import { utapi } from "uploadthing/server";
+import { UTApi } from "uploadthing/server";
+
+// UploadThing's server API (used to delete uploads). Reads UPLOADTHING_TOKEN.
+const utapi = new UTApi();
 
 export const appRouter = router({
   authCallback: publicProcedure.query(async () => {

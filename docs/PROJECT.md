@@ -25,7 +25,7 @@ The codebase started from the "Quill" tutorial project. The package name in
 | API | tRPC + TanStack Query | 10.x, 4.x |
 | Database | Prisma on PostgreSQL (Neon) with pgvector | 5.11 |
 | Auth | Kinde (`@kinde-oss/kinde-auth-nextjs`) | 2.13 |
-| Uploads | UploadThing | Works (upload from localhost, 2026-11-13). Files are served from `https://utfs.io/f/<key>`, which is what the SDK passes as `file.url`. |
+| Uploads | UploadThing | 7.7 (`@uploadthing/react` 7.3). New files are served from `https://<app>.ufs.sh/f/<key>` (`file.ufsUrl`); older rows keep `utfs.io` URLs, which still work. |
 | Retrieval | `@langchain/core`, `@langchain/textsplitters` | 1.4, 1.0 |
 | Chat | Google `gemini-3.5-flash-lite` through `@langchain/google` (`ChatGoogle`) | 0.2 |
 | Embeddings | Google `gemini-embedding-001`, 1536 numbers per chunk, through `@langchain/google-genai` | 2.3 |
@@ -179,7 +179,7 @@ Names only. Values live in `.env` (git-ignored). Template: `.env.example`.
 | `KINDE_CLIENT_ID`, `KINDE_CLIENT_SECRET`, `KINDE_ISSUER_URL`, `KINDE_SITE_URL`, `KINDE_POST_LOGIN_REDIRECT_URL`, `KINDE_POST_LOGOUT_REDIRECT_URL` | Kinde SDK |
 | `DATABASE_URL` | Prisma at runtime. Neon's pooled connection string. |
 | `DIRECT_URL` | `prisma migrate`. Neon's direct connection string. |
-| `UPLOADTHING_SECRET`, `UPLOADTHING_APP_ID` | UploadThing |
+| `UPLOADTHING_TOKEN` | UploadThing 7 (route handler and `UTApi`). One base64 token holding the API key, app id and region. Replaces `UPLOADTHING_SECRET` and `UPLOADTHING_APP_ID`, which can be deleted from `.env`. |
 | `GOOGLE_API_KEY` | Gemini embeddings and chat (read by LangChain from the environment) |
 | `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET` | Stripe client and webhook |
 | `VERCEL_URL`, `PORT` | `absoluteUrl()` in `src/lib/utils.ts` |
@@ -197,7 +197,7 @@ from `.env`.
 | OpenAI | No longer used (D-013). The old key in `.env` was already invalid. |
 | Kinde | Sign-in from localhost works (2026-11-13). SDK 2.13 since 2026-11-13 (1.8 printed tokens to the server log on sign-in). The client secret was public in git history from 2023-10-01 until the 2026-11-13 rewrite (D-011); whether it has been rotated since is not known. |
 | Stripe | Only a test-mode price ID is configured; the production ID is empty. Keys not re-verified. |
-| UploadThing | File URL is built from a hardcoded S3 host instead of the URL UploadThing returns. Keys not re-verified. |
+| UploadThing | SDK 7, token set (2026-11-13). Upload, processing and delete verified from localhost. About 24 stored files have no database row (left from older deletes). |
 | Vercel | Needs: new `DATABASE_URL`, `DIRECT_URL`, `GOOGLE_API_KEY`; Node 22+; `prisma migrate deploy` run once against Neon. |
 
 ## Health at last check (2026-11-13)
