@@ -55,14 +55,16 @@ const Message = forwardRef<HTMLDivElement, MessageProps>(
             {typeof message.text === "string" ? (
               // prose-invert gives light text: always on the coloured user
               // bubble, and on the assistant bubble only in dark mode.
-              <ReactMarkdown
+              // react-markdown 9+ takes no className, so the prose styles
+              // sit on a wrapper.
+              <div
                 className={cn("prose prose-sm max-w-none break-words", {
                   "prose-invert": message.isUserMessage,
                   "dark:prose-invert": !message.isUserMessage,
                 })}
               >
-                {message.text}
-              </ReactMarkdown>
+                <ReactMarkdown>{message.text}</ReactMarkdown>
+              </div>
             ) : (
               message.text
             )}

@@ -1,6 +1,7 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
+import { useHasMounted } from "@/lib/use-has-mounted";
 import Link from "next/link";
 import { useMediaQuery } from "@mantine/hooks";
 import { ArrowLeft, FileText, MessageSquare } from "lucide-react";
@@ -56,8 +57,7 @@ const browserStorage = {
 export default function FileWorkspace({ file }: { file: WorkspaceFile }) {
   // Which layout applies is only known in the browser. Waiting for mount
   // avoids rendering one layout and then replacing it with the other.
-  const [mounted, setMounted] = useState(false);
-  useEffect(() => setMounted(true), []);
+  const mounted = useHasMounted();
   const isWide = useMediaQuery("(min-width: 1024px)");
 
   const [tab, setTab] = useState<Tab>("pdf");

@@ -2,7 +2,7 @@ import { trpc } from "@/app/_trpc/client";
 import { INFINITE_QUERY_LIMIT } from "@/config/infinite-query";
 import { Loader2, MessageSquare } from "lucide-react";
 import Message from "./Message";
-import { useContext, useEffect, useRef } from "react";
+import { useContext, useEffect } from "react";
 import { ChatContext } from "./ChatContext";
 import { useIntersection } from "@mantine/hooks";
 import { Skeleton } from "../ui/skeleton";
@@ -43,12 +43,9 @@ const Messages = ({ fileId }: MessagesProps) => {
     ...(messages ?? []),
   ];
 
-  const lastMessageRef = useRef<HTMLDivElement>(null);
-
-  const { ref, entry } = useIntersection({
-    root: lastMessageRef.current,
-    threshold: 1,
-  });
+  // Watches the oldest loaded message; when it scrolls fully into view, the
+  // next (older) page is fetched.
+  const { ref, entry } = useIntersection({ threshold: 1 });
 
   useEffect(() => {
     if (entry?.isIntersecting) {

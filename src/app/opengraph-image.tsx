@@ -4,10 +4,6 @@ import { ImageResponse } from "next/og";
 // component to a PNG and adds the og:image tags to every page, so the image
 // is code and cannot drift from the design the way a screenshot does.
 
-// Edge runtime: on Windows, Next 14 cannot load the default font for
-// ImageResponse in the Node runtime (it builds an invalid file path).
-export const runtime = "edge";
-
 export const alt = "pen.AI. Ask your PDFs anything.";
 export const size = { width: 1200, height: 630 };
 export const contentType = "image/png";

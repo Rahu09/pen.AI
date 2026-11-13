@@ -63,19 +63,21 @@ One group per commit, app verified after each. The LangChain upgrade and the
 Pinecone removal are in phase 2, because the retrieval code is rewritten there.
 
 - [x] Next.js 13.5 to 14.2.35 (React 18 kept). Needed first: Kinde SDK 2 does not support Next 13.3 to 14.2.34
-- [ ] Next.js 15 or 16 and React 19 (async request APIs, `params` as promise)
+- [x] Next.js 16.4 and React 19.3 (D-022): `params` and `headers()` awaited, `middleware.ts` renamed `proxy.ts`, Turbopack build (webpack aliases removed), ESLint 9 flat config, OG images moved off the Edge runtime, react-markdown 10, Radix and lucide updated. Type-check, lint, tests and build pass
+- [x] Browser check on Next 16: Files, upload, PDF viewer (react-pdf 11), chat, rename, delete, billing, sign-in redirect, theme toggle
+- [ ] Owner: in `DATABASE_URL` and `DIRECT_URL` (`.env` and Vercel), change `sslmode=require` to `sslmode=verify-full`. Same behaviour today; silences the `pg` security warning and keeps full certificate checks when `pg` 9 changes what `require` means
 - [x] tRPC 10 to 11.28 and TanStack Query 4 to 5.107: `useUtils`, `isPending` for mutations, `refetchInterval` reads `query.state.data`, `/auth-callback` redirects moved into effects (queries lost `onSuccess` / `onError`). Checked in the browser: Files, upload, chat, rename, delete, billing, auth callback
 - [x] Kinde SDK 1.8 to 2.13: `getUser()` awaited everywhere, `handleAuth()` route, link components from `/components`, `withAuth` middleware. SDK 1.8's token logging is gone
 - [x] UploadThing 5 to 7.7: `createRouteHandler`, `UTApi`, `file.ufsUrl`, `awaitServerData: false`; one `UPLOADTHING_TOKEN` replaces the secret and app id
 - [x] Prisma 5 to 7.10: `prisma-client` generator (CommonJS) into `src/generated/prisma`, `prisma.config.ts`, `pg` driver adapter; TypeScript 5.2 to 5.9 (Prisma 7 needs 5.4+). Checked live against Neon: typed queries, raw SQL, pgvector search, `migrate status`
 - [x] Stripe 13 to 23.1, API version pinned to `2026-10-28.endive`. Webhook reads the subscription from `invoice.parent.subscription_details` and the period end from the subscription item; `payment_method_types` dropped from Checkout. Key and Pro price checked live (read-only)
 - [x] Browser check after Prisma 7 (fresh dev server): Files page with message count and thumbnail; upload of a generated PDF to `SUCCESS` (vector insert); chat answered from it; delete removed row and stored file
-- [ ] Production build after Prisma 7 and Stripe 23: not run locally (a dev server was running); CI builds on the next push
+- [x] Production build after Prisma 7 and Stripe 23 (passed on Next 16, 2026-11-14)
 - [ ] Stripe webhook against a real test event (`stripe trigger invoice.payment_succeeded` or a test checkout)
 - [x] pdf.js worker served from our own build instead of the cdnjs URL; `react-pdf` 7.7.3 and `pdfjs-dist` 3.11.174 pinned exactly (they must match)
 - [x] PDF viewer and fullscreen view were blank on Next 14 (`react-resize-detector` reported no width); now measured with Mantine's `useElementSize`, and `react-resize-detector` removed
-- [ ] react-pdf 10 or 11: do with the Next 15/16 step. pdf.js 4+ ships `.mjs` that Next 14's webpack cannot load ("Object.defineProperty called on non-object"), and react-pdf 11 needs React 19
-- [x] `react-resizable-panels` 2 to 4.15.3 (`Group` / `Panel` / `Separator`, `useDefaultLayout`). Pinned exactly: 4.16+ imports React 19's `Activity` and breaks the production build on React 18. Unpin with React 19
+- [x] react-pdf 7 to 11 with `pdfjs-dist` 6.3.289 (exact pin, matches react-pdf's own); worker is `pdf.worker.min.mjs`
+- [x] `react-resizable-panels` 2 to 4.15.3 (`Group` / `Panel` / `Separator`, `useDefaultLayout`). Was pinned for React 18; unpinned to ^4.22 with React 19
 - [x] Unused `react-loading-skeleton`, `react-element-to-jsx-string` and `@tabler/icons-react` removed
 - [ ] Tailwind 3 to 4 (optional, do last)
 
@@ -169,7 +171,7 @@ Not yet checked:
 - [ ] Tests not written yet: the chat route (`api/message`), `getUserSubscriptionPlan`, the vector store SQL (needs a real Postgres with pgvector, e.g. a service container in CI), React components
 - [x] Error boundaries and `not-found` / `error` pages: site 404, dashboard 404 (unknown or someone else's file), dashboard and root error boundaries, `global-error`
 - [x] Fix the lint warnings (lint is clean as of 2026-11-13)
-- [ ] Dev server logs "Invalid hook call ... reading 'useMemo'" once when `/auth-callback` first renders; the page still works. Recheck after the Next.js upgrade
+- [x] Dev server logged "Invalid hook call" when `/auth-callback` first rendered: gone on Next 16
 - [ ] Decide whether to keep `qodana.yaml`
 
 ## Later ideas (not committed to)

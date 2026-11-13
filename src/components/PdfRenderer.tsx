@@ -24,8 +24,8 @@ import {
   DropdownMenuItem,
 } from "./ui/dropdown-menu";
 import PdfFullscreen from "./PdfFullscreen";
-import "react-pdf/dist/esm/Page/AnnotationLayer.css";
-import "react-pdf/dist/esm/Page/TextLayer.css";
+import "react-pdf/dist/Page/AnnotationLayer.css";
+import "react-pdf/dist/Page/TextLayer.css";
 
 interface PDFRendererProps {
   url: string;

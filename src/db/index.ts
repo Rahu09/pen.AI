@@ -12,7 +12,6 @@ function createClient() {
 }
 
 declare global {
-  // eslint-disable-next-line no-var
   var cachedPrisma: PrismaClient | undefined;
 }
 

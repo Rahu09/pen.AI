@@ -96,7 +96,9 @@ export function UserMenu({
         </DropdownMenuItem>
         <DropdownMenuSeparator />
         <DropdownMenuItem asChild>
-          {/* A plain link: Kinde's logout route ends the session and redirects. */}
+          {/* A plain link on purpose: Kinde's logout route ends the session
+              and redirects. next/link could prefetch it and log the user out. */}
+          {/* eslint-disable-next-line @next/next/no-html-link-for-pages */}
           <a href="/api/auth/logout">
             <LogOut className="mr-2 h-4 w-4" aria-hidden="true" />
             Log out

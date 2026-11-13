@@ -15,12 +15,12 @@ import type Stripe from "stripe";
  *   forward each month; without it a subscriber would drop to Free after the
  *   first period.
  *
- * `event.data.object` is a different type per event. Stripe SDK 13 does not
- * narrow it from `event.type`, so each branch states the type it receives.
+ * `event.data.object` is a different type per event; each branch states the
+ * type it receives.
  */
 export async function POST(request: Request) {
   const body = await request.text();
-  const signature = headers().get("Stripe-Signature") ?? "";
+  const signature = (await headers()).get("Stripe-Signature") ?? "";
 
   let event: Stripe.Event;
 

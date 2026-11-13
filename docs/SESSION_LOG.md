@@ -15,6 +15,32 @@ Entry format:
 
 ---
 
+## 2026-11-14: Next 16 and React 19
+
+- Asked: upgrade to Next 16 and React 19 (D-022).
+- Done: next 16.4.6, react / react-dom 19.3.1 and their types; react-pdf
+  11 with pdfjs-dist 6.3.289; react-resizable-panels ^4.22 (unpinned);
+  react-markdown 10; react-dropzone 20; react-textarea-autosize 8.5.9;
+  Radix packages and lucide-react 0.577; ESLint 9 with
+  eslint-config-next 16.
+  Code: `params` awaited on the file page, `headers()` awaited in the
+  Stripe webhook; `src/middleware.ts` renamed `src/proxy.ts`; webpack
+  block removed from `next.config.js`; `eslint.config.mjs` replaces
+  `.eslintrc.json` and `pnpm lint` runs `eslint .`; OG images no longer
+  on Edge; `JSX` to `React.JSX`; react-markdown's className moved to a
+  wrapper; react-pdf CSS paths. React's new hook rules: `useHasMounted`
+  (ThemeToggle, FileWorkspace), rename dialog and thumbnail set state
+  during render instead of in an effect, unused ref in Messages removed,
+  logout link kept as `<a>` (next/link could prefetch the logout route).
+- Verified: type-check, lint, 44 tests, `pnpm build` (Turbopack). In the
+  browser on a fresh dev server: signed-out redirect, Files, upload of a
+  generated PDF, PDF viewer, chat, rename, delete (test file removed),
+  theme switch, `/auth-callback`, billing to Stripe Checkout. The old
+  "Invalid hook call" log on `/auth-callback` is gone.
+- Found: `pg` warns that `sslmode=require` in the database URLs will mean
+  less in `pg` 9; the owner can switch to `sslmode=verify-full`.
+- Next: commit. Phase 3 is done apart from optional Tailwind 4.
+
 ## 2026-11-14: Price, Pro quality claim, preview image, licence, package name
 
 - Asked: Pro at 199 a month; what to do about the two unbacked Pro claims;

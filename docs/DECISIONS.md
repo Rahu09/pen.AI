@@ -400,8 +400,7 @@ Entry format:
 ## D-019: Pin react-pdf 7 and react-resizable-panels 4.15 until React 19
 
 - Date: 2026-11-13
-- Status: Accepted (owner asked for the upgrades; the pins were forced by
-  build failures and chosen by Claude).
+- Status: Superseded by D-022 (pins lifted with React 19).
 - Context: react-pdf 10 (pdf.js 5) does not load under Next 14's webpack,
   react-pdf 11 needs React 19, and react-resizable-panels 4.16+ imports
   React 19's `Activity`, which fails the production build on React 18.
@@ -483,6 +482,31 @@ Entry format:
   the PDF and the conversation it sees. Pro prompts are about twice as
   long, so they use more of the Gemini quota. The pricing page states the
   actual numbers, read from `PLANS`.
+
+## D-022: Next 16 and React 19, built with Turbopack
+
+- Date: 2026-11-14
+- Status: Accepted (owner asked for the Next 16 / React 19 upgrade; the
+  details were chosen by Claude). Supersedes the pins in D-019.
+- Context: Last step of ROADMAP phase 3. Kinde 2.13, tRPC 11 and React
+  Query 5 all support Next 16 and React 19.
+- Decision: Next 16.4.6 and React 19.3.1. Build with Turbopack (Next 16's
+  default), so the old webpack aliases for `canvas` and `encoding` are
+  removed (pdf.js 6 handles `canvas` itself). `middleware.ts` becomes
+  `proxy.ts`. ESLint 9 with a flat `eslint.config.mjs`, since `next lint`
+  is gone. The OG and Twitter images run on Node instead of the
+  deprecated Edge runtime. react-pdf 11 with `pdfjs-dist` pinned to the
+  version it depends on; react-resizable-panels unpinned.
+- Alternatives:
+  - Next 15 first: one more step to verify, and Next 15 is already behind.
+  - Keep webpack (`next build --webpack`): would keep the aliases, but
+    Turbopack is the default and faster, and the aliases are no longer
+    needed.
+  - Turn off React's new hook lint rules: rejected; the six findings were
+    fixed instead (`useHasMounted` with `useSyncExternalStore`, state
+    adjusted during render, an unused ref removed).
+- Consequences: Route `params`, `headers()` and `cookies()` are promises.
+  `pdfjs-dist` must move together with react-pdf.
 
 ---
 

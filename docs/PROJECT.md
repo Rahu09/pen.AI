@@ -20,7 +20,7 @@ The codebase started from the "Quill" tutorial project. Licence: MIT.
 
 | Area | Library | Version |
 |---|---|---|
-| Framework | Next.js App Router, React | 14.2.35, 18.2.0 |
+| Framework | Next.js App Router (Turbopack for dev and build), React | 16.4.6, 19.3.1 |
 | API | tRPC + TanStack Query | 11.28, 5.107 |
 | Database | Prisma on PostgreSQL (Neon) with pgvector; queries go through the `pg` driver adapter (`@prisma/adapter-pg`) | 7.10 |
 | Auth | Kinde (`@kinde-oss/kinde-auth-nextjs`) | 2.13 |
@@ -29,13 +29,12 @@ The codebase started from the "Quill" tutorial project. Licence: MIT.
 | Chat | Google `gemini-3.5-flash-lite` through `@langchain/google` (`ChatGoogle`) | 0.2 |
 | Embeddings | Google `gemini-embedding-001`, 1536 numbers per chunk, through `@langchain/google-genai` | 2.3 |
 | Payments | Stripe | 23.1, API version `2026-10-28.endive` (pinned in `src/lib/stripe.ts`) |
-| UI | Tailwind 3.3, shadcn/ui, lucide, next-themes 0.4, react-resizable-panels 4.15 (pinned, see ROADMAP). Fonts through `next/font`: Inter, Instrument Serif, Caveat | |
-| PDF viewer | react-pdf with pdf.js; worker served from our own build | 7.7.3, pdfjs-dist 3.11.174 (pinned together) |
+| UI | Tailwind 3.3, shadcn/ui, lucide, next-themes 0.4, react-resizable-panels 4.22. Fonts through `next/font`: Inter, Instrument Serif, Caveat | |
+| PDF viewer | react-pdf with pdf.js; worker served from our own build | 11.0.0, pdfjs-dist 6.3.289 (pinned together: the worker must match the library) |
 | PDF text extraction | pdf.js as bundled in `pdf-parse` 1.1 | |
 
-Requires Node 22+ and pnpm 10+. Everything outside the Retrieval, Chat and
-Embeddings rows is still about three years behind its current major (ROADMAP
-phase 3).
+Requires Node 22+ and pnpm 10+. Everything is on its current major except
+Tailwind (3; 4 is optional, ROADMAP phase 3).
 
 ## Directory map
 
@@ -45,7 +44,7 @@ prisma.config.ts              Prisma CLI config (Prisma 7): schema path, migrati
 src/generated/prisma/         Generated Prisma client (git-ignored; `prisma generate`, runs on install)
 src/db/index.ts               PrismaClient with the pg adapter on DATABASE_URL; import `db` from here
 prisma/migrations/            SQL migrations (the second one enables pgvector)
-src/middleware.ts             Kinde `withAuth` on /dashboard/*: signed-out visitors go to sign-in and come back to the page
+src/proxy.ts                  (Next 16's name for middleware) Kinde `withAuth` on /dashboard/*: signed-out visitors go to sign-in and come back to the page
 src/app/
   layout.tsx                  Root: fonts, providers (theme, tRPC), toaster, viewport theme colour
   not-found.tsx, error.tsx    Site 404 (with navbar) and root error boundary
@@ -88,6 +87,7 @@ src/lib/vector-store.ts       DocumentChunkVectorStore: LangChain vector store o
 src/lib/safe-redirect.ts      afterSignInPath(): which `origin` the auth callback may follow
 src/lib/                      stripe, uploadthing, utils
 src/**/*.test.ts              Vitest unit tests, next to the code they test
+eslint.config.mjs             ESLint 9 flat config (Next's core-web-vitals rules)
 vitest.config.mts             Test config (`@/` alias, Node environment)
 .github/workflows/ci.yml      CI: install, type-check, lint, test, build
 ```
@@ -206,7 +206,7 @@ from `.env`.
 ## Health at last check (2026-11-13)
 
 - `pnpm exec tsc --noEmit`: passes.
-- `pnpm lint`: warnings only (hook dependency arrays, all pre-existing).
+- `pnpm lint`: ESLint 9 with `eslint.config.mjs` (Next 16 removed `next lint`); clean.
 - `pnpm build`: passes.
 - PDF loading and splitting: checked on a generated 3-page PDF (one page
   without text).
@@ -255,3 +255,8 @@ from `.env`.
   the browser on a fresh dev server: Files page, upload of a generated PDF
   to `SUCCESS`, chat (optimistic message and streamed answer), rename,
   delete, billing button to Stripe Checkout, `/auth-callback` redirect.
+- Next 16.4 and React 19.3 (2026-11-14): type-check, lint, 44 tests and
+  `pnpm build` (Turbopack) pass. In the browser: signed-out redirect to
+  sign-in, Files with thumbnail, upload of a generated PDF, PDF viewer
+  (react-pdf 11, canvas and text layer), chat, rename, delete, theme
+  switch, `/auth-callback`, billing button to Stripe Checkout.

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import dynamic from "next/dynamic";
 import { useIntersection } from "@mantine/hooks";
 import { ThumbnailPlaceholder } from "./ThumbnailPlaceholder";
@@ -27,9 +27,9 @@ export function PdfThumbnail({
   const { ref, entry } = useIntersection({ rootMargin: "200px" });
   const [wasSeen, setWasSeen] = useState(false);
 
-  useEffect(() => {
-    if (entry?.isIntersecting) setWasSeen(true);
-  }, [entry]);
+  // Once seen, stay rendered even after scrolling away. Set during render,
+  // not in an effect, so the preview starts loading in the same pass.
+  if (entry?.isIntersecting && !wasSeen) setWasSeen(true);
 
   return (
     <div ref={ref} className="h-full w-full">

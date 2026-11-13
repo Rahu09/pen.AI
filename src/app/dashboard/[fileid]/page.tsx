@@ -4,13 +4,14 @@ import { getKindeServerSession } from "@kinde-oss/kinde-auth-nextjs/server";
 import { notFound, redirect } from "next/navigation";
 
 interface PageProps {
-  params: {
+  // Since Next 15, route params arrive as a promise.
+  params: Promise<{
     fileid: string;
-  };
+  }>;
 }
 
 const Page = async ({ params }: PageProps) => {
-  const { fileid } = params;
+  const { fileid } = await params;
 
   const { getUser } = getKindeServerSession();
   const user = await getUser();

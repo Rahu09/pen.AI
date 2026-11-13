@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -26,12 +26,16 @@ export function RenameFileDialog({
   onClose: () => void;
   onRename: (id: string, name: string) => void;
 }) {
-  const [name, setName] = useState("");
+  const [name, setName] = useState(file?.name ?? "");
 
-  // start from the current name each time the dialog opens
-  useEffect(() => {
+  // Start from the current name each time the dialog opens for a file.
+  // Adjusting state while rendering (React's recommended pattern) instead of
+  // in an effect avoids a second render with the stale name.
+  const [shownFile, setShownFile] = useState(file);
+  if (file !== shownFile) {
+    setShownFile(file);
     if (file) setName(file.name);
-  }, [file]);
+  }
 
   const trimmed = name.trim();
   const canSave =

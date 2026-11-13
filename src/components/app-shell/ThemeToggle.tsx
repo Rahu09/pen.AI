@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useHasMounted } from "@/lib/use-has-mounted";
 import { useTheme } from "next-themes";
 import { Monitor, Moon, Sun } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -28,8 +28,7 @@ export function ThemeToggle({
 
   // The theme is only known in the browser. Rendering the icon before mount
   // would not match the server's HTML.
-  const [mounted, setMounted] = useState(false);
-  useEffect(() => setMounted(true), []);
+  const mounted = useHasMounted();
 
   const Icon = mounted && resolvedTheme === "dark" ? Moon : Sun;
 
