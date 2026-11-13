@@ -15,6 +15,29 @@ Entry format:
 
 ---
 
+## 2026-11-13: Error and not-found pages (same chat as below)
+
+- Asked: add the error pages (ROADMAP phase 6).
+- Done:
+  - `StatusPage` component: handwritten note, serif headline with an
+    italic word, sentence, actions. Shared by every screen below.
+  - `src/app/not-found.tsx`: site-wide 404 with the marketing navbar and
+    footer.
+  - `src/app/dashboard/not-found.tsx`: shown inside the app shell when a
+    file id does not exist or belongs to someone else (same message for
+    both, so file ids are not revealed).
+  - `src/app/dashboard/error.tsx`: error boundary inside the shell, with
+    "Try again" (`reset`) and the error `digest` as a reference.
+  - `src/app/error.tsx`: catches public-page errors and errors in the
+    dashboard layout (a boundary never catches its own folder's layout).
+  - `src/app/global-error.tsx`: if the root layout fails; inline styles.
+- Verified: type-check, lint. In the browser: `/no-such-page` (404 with
+  navbar), `/dashboard/<unknown id>` (404 in the shell, phone width too),
+  and the dashboard error boundary, by making a file page throw for one
+  request and then removing the throw. `error.tsx` at the root and
+  `global-error` were not triggered.
+- Next: tests and CI.
+
 ## 2026-11-13: Phase 5 fixes without owner input (same chat as below)
 
 - Asked: start on the phase 5 fixes.

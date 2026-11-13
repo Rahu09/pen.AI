@@ -45,7 +45,9 @@ prisma/schema.prisma          User, File, Message, DocumentChunk, UploadStatus
 prisma/migrations/            SQL migrations (the second one enables pgvector)
 src/middleware.ts             Kinde `withAuth` on /dashboard/*: signed-out visitors go to sign-in and come back to the page
 src/app/
-  layout.tsx                  Root: fonts, providers (theme, tRPC), toaster
+  layout.tsx                  Root: fonts, providers (theme, tRPC), toaster, viewport theme colour
+  not-found.tsx, error.tsx    Site 404 (with navbar) and root error boundary
+  global-error.tsx            Last resort if the root layout itself fails (inline styles)
   (marketing)/                Public pages; share the marketing navbar
     page.tsx                  Landing page (hero, how it works, plans, under the hood)
     pricing/page.tsx          Pricing table (limits partly hardcoded here)
@@ -55,6 +57,7 @@ src/app/
   dashboard/page.tsx          Files page: auth check, renders Dashboard
   dashboard/[fileid]/page.tsx One file: ownership check, renders FileWorkspace
   dashboard/billing/page.tsx  BillingForm
+  dashboard/not-found.tsx, error.tsx   404 and error boundary inside the app shell
   api/auth/[kindeAuth]        Kinde handler
   api/trpc/[trpc]             tRPC fetch adapter
   api/uploadthing             Upload router, quota check and ingest pipeline (core.ts)
@@ -68,6 +71,7 @@ src/components/file/*         FileWorkspace: resizable PDF and chat, tabs on nar
 src/components/chat/*         ChatWrapper, ChatContext (optimistic + streaming), Messages
 src/components/PdfRenderer.tsx, PdfFullscreen.tsx
 src/components/Navbar.tsx, UserAccountNav.tsx   Marketing navbar only
+src/components/StatusPage.tsx Shared layout for 404 and error screens
 src/components/Aurora.tsx     The moving gradient (hero, Pro card, app page wash)
 src/components/Wordmark.tsx   Logo: quill in an ink circle, name in the serif
 src/components/marketing/*    TypedHeadline (typed hero title + ink underline), ProductPreview, Bloom, SiteFooter, shared button classes

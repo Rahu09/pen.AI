@@ -150,7 +150,7 @@ Not yet checked:
 
 - [ ] Test runner and tests for the tRPC router, the Stripe webhook and plan-limit logic
 - [ ] GitHub Actions: install, type-check, lint, test, build
-- [ ] Error boundaries and `not-found` / `error` pages for the dashboard routes
+- [x] Error boundaries and `not-found` / `error` pages: site 404, dashboard 404 (unknown or someone else's file), dashboard and root error boundaries, `global-error`
 - [x] Fix the lint warnings (lint is clean as of 2026-11-13)
 - [ ] Dev server logs "Invalid hook call ... reading 'useMemo'" once when `/auth-callback` first renders; the page still works. Recheck after the Next.js upgrade
 - [ ] Decide whether to keep `qodana.yaml`
