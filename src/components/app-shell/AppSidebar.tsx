@@ -31,9 +31,9 @@ export function AppSidebar({ user }: { user: ShellUser }) {
         )}
       >
         <Link
-          href="/dashboard"
+          href="/"
           className="rounded-md outline-none ring-offset-background focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
-          aria-label="pen.AI, go to your files"
+          aria-label="pen.AI home"
         >
           <Wordmark showName={!compact} />
         </Link>

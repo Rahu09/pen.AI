@@ -15,9 +15,9 @@ export function MobileHeader({ user }: { user: ShellUser }) {
   return (
     <header className="flex h-14 shrink-0 items-center gap-2 border-b bg-background/70 px-3 backdrop-blur-sm lg:hidden">
       <Link
-        href="/dashboard"
+        href="/"
         className="shrink-0 rounded-md outline-none focus-visible:ring-2 focus-visible:ring-ring"
-        aria-label="pen.AI, go to your files"
+        aria-label="pen.AI home"
       >
         <Wordmark showName={false} />
       </Link>

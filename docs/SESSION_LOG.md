@@ -41,6 +41,9 @@ Entry format:
     plus fade mask) made the colour all but disappear. It is now two radial
     glows sized with `closest-side`, which reach transparency exactly at the
     section's edges, so there is colour and no line.
+  - The pen.AI logo in the app (sidebar and narrow top bar) now goes to the
+    landing page instead of the Files page, at the owner's request; Files
+    is one click away in the navigation next to it.
 - Verified: type-check, lint. In the browser: landing in light and dark at
   1440 and 375px, Files page in dark, the theme switch, every link. Build
   not rerun, to keep the dev server alive.
