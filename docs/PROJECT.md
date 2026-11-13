@@ -133,8 +133,10 @@ are paged 10 at a time by cursor (`getFileMessages`).
 
 **Billing.** `createStripeSession` opens Checkout for new subscribers or the
 billing portal for existing ones. The webhook handles
-`checkout.session.completed` and `invoice.payment_succeeded` and writes the
-Stripe IDs and period end onto `User`. `getUserSubscriptionPlan()` in
+`checkout.session.completed` (links the customer and subscription to the
+user through the Checkout metadata) and `invoice.payment_succeeded` (finds
+the user by subscription id and moves the period end forward on every
+renewal). `getUserSubscriptionPlan()` in
 `src/lib/stripe.ts` derives `isSubscribed` from those fields.
 
 ## Data model

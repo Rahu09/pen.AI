@@ -18,18 +18,27 @@ const Page = async () => {
   const { getUser } = getKindeServerSession();
   const user = await getUser();
 
-  const pricingItems = [
-    {
-      plan: "Free",
-      tagline: "For small side projects.",
-      quota: 10,
+  // Every limit shown here comes from PLANS, the same object the upload
+  // checks read, so the page cannot drift from what the app enforces.
+  const taglines: Record<string, string> = {
+    free: "For small side projects.",
+    pro: "For larger projects with higher needs.",
+  };
+
+  const pricingItems = PLANS.map((p) => {
+    const isPro = p.slug === "pro";
+    return {
+      plan: p.name,
+      tagline: taglines[p.slug],
+      quota: p.quota,
+      price: p.price.amount,
       features: [
         {
-          text: "5 pages per PDF",
+          text: `${p.pagesPerPdf} pages per PDF`,
           footnote: "The maximum amount of pages per PDF-file.",
         },
         {
-          text: "4MB file size limit",
+          text: `${p.maxFileSizeMb}MB file size limit`,
           footnote: "The maximum file size of a single PDF file.",
         },
         {
@@ -38,40 +47,15 @@ const Page = async () => {
         {
           text: "Higher-quality responses",
           footnote: "Better algorithmic responses for enhanced content quality",
-          negative: true,
+          negative: !isPro,
         },
         {
           text: "Priority support",
-          negative: true,
+          negative: !isPro,
         },
       ],
-    },
-    {
-      plan: "Pro",
-      tagline: "For larger projects with higher needs.",
-      quota: PLANS.find((p) => p.slug === "pro")!.quota,
-      features: [
-        {
-          text: "25 pages per PDF",
-          footnote: "The maximum amount of pages per PDF-file.",
-        },
-        {
-          text: "16MB file size limit",
-          footnote: "The maximum file size of a single PDF file.",
-        },
-        {
-          text: "Mobile-friendly interface",
-        },
-        {
-          text: "Higher-quality responses",
-          footnote: "Better algorithmic responses for enhanced content quality",
-        },
-        {
-          text: "Priority support",
-        },
-      ],
-    },
-  ];
+    };
+  });
 
   return (
     <>
@@ -89,11 +73,7 @@ const Page = async () => {
 
         <div className="pt-12 grid grid-cols-1 gap-10 lg:grid-cols-2">
           <TooltipProvider>
-            {pricingItems.map(({ plan, tagline, quota, features }) => {
-              const price =
-                PLANS.find((p) => p.slug === plan.toLowerCase())?.price
-                  .amount || 0;
-
+            {pricingItems.map(({ plan, tagline, quota, price, features }) => {
               return (
                 <div
                   key={plan}

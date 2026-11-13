@@ -135,14 +135,16 @@ Not yet checked:
 - [x] `next.config.js`: redirect source `/sign-ip` fixed to `/sign-up`
 - [ ] `src/config/stripe.ts`: production price ID is empty and the code always reads `priceIds.test`
 - [ ] `prisma/schema.prisma`: `stripeCurrentPeriodEnd` is a string written with `toDateString()`; should be `DateTime`
-- [ ] `src/app/api/webhooks/stripe/route.ts`: `invoice.payment_succeeded` payload is cast to a Checkout Session
+- [x] `src/app/api/webhooks/stripe/route.ts`: `invoice.payment_succeeded` payload was cast to a Checkout Session. Worse, the renewal branch never ran (it required `metadata.userId`, which invoices do not carry), so a subscriber would have dropped to Free after the first month. Now typed per event and keyed by subscription id
+- [ ] Stripe webhook: not yet exercised with a real test event (`stripe trigger` or a test checkout)
 - [x] Indexes on `File.userId`, `Message.fileId`, `Message.userId`
-- [ ] `src/app/(marketing)/pricing/page.tsx`: plan limits are hardcoded in copy instead of read from `PLANS`
+- [x] `src/app/(marketing)/pricing/page.tsx`: plan limits are read from `PLANS`
+- [ ] Pricing copy promises "Higher-quality responses" and "Priority support" for Pro; neither exists in the code (both plans use the same model). Owner to decide: keep, reword or remove
 - [x] `src/app/(marketing)/auth-callback/page.tsx`: validate `origin` before redirecting (only plain in-app paths; anything else goes to `/dashboard`)
 - [ ] Quota counts files that still exist: deleting a file gives the upload back. Count uploads in their own table if that matters
 - [x] `src/app/layout.tsx`: no-op `content` attribute removed; `Providers` is inside `<body>`
 - [~] Branding: page title and description fixed; package name is still `quill`
-- [ ] Remove leftover `console.log` in `src/trpc/index.ts`
+- [x] Remove leftover `console.log` in `src/trpc/index.ts` (and the commented-out ones in `src/lib/stripe.ts`)
 
 ## Phase 6: Quality
 

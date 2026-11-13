@@ -15,6 +15,29 @@ Entry format:
 
 ---
 
+## 2026-11-13: Phase 5 fixes without owner input (same chat as below)
+
+- Asked: start on the phase 5 fixes.
+- Done:
+  - Stripe webhook (`src/app/api/webhooks/stripe/route.ts`): each event
+    is typed as what it is (Checkout Session or Invoice). Found a real bug:
+    the renewal branch (`invoice.payment_succeeded`) never ran, because the
+    route returned early unless the object had `metadata.userId`, and
+    invoices do not carry the Checkout metadata. Subscribers would have
+    dropped to Free after the first period. Renewals now find the user by
+    subscription id, with `updateMany` so an invoice that arrives before
+    the checkout event is a no-op instead of an error.
+  - Pricing page builds both cards from `PLANS` (pages, file size, quota,
+    price).
+  - `console.log("dbUser", ...)` and commented-out logs removed from
+    `src/trpc/index.ts` and `src/lib/stripe.ts`.
+- Verified: type-check, lint. Pricing page shows 5/25 pages, 4/16 MB,
+  10/50 PDFs, unchanged. The webhook rejects an unsigned request (400).
+- Not verified: the webhook with a real Stripe test event.
+- Open (owner): Pro price `amount: 500`; pricing copy promises
+  "Higher-quality responses" and "Priority support", which do not exist.
+- Next: error and not-found pages, then tests and CI.
+
 ## 2026-11-13: Production build on Next 14 (same chat as below)
 
 - Asked: run the build once the leftover dev server was stopped.
