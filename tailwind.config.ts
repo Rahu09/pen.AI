@@ -22,6 +22,18 @@ module.exports = {
       },
     },
     extend: {
+      fontFamily: {
+        sans: ["var(--font-sans)", ...defaultTheme.fontFamily.sans],
+        serif: ["var(--font-serif)", ...defaultTheme.fontFamily.serif],
+        hand: ["var(--font-hand)", "cursive"],
+      },
+      boxShadow: {
+        // A sheet of paper: a tight contact shadow and a long soft one.
+        paper:
+          "0 1px 2px rgb(24 24 27 / 0.06), 0 12px 32px -12px rgb(30 27 75 / 0.18)",
+        "paper-lifted":
+          "0 2px 4px rgb(24 24 27 / 0.06), 0 22px 44px -16px rgb(30 27 75 / 0.28)",
+      },
       colors: {
         border: "hsl(var(--border))",
         input: "hsl(var(--input))",
@@ -104,6 +116,10 @@ module.exports = {
             transform: "translateY(-50%)",
           },
         },
+        "fade-up": {
+          from: { opacity: "0", transform: "translateY(12px)" },
+          to: { opacity: "1", transform: "translateY(0)" },
+        },
         shimmer: {
           from: {
             backgroundPosition: "0 0",
@@ -122,6 +138,7 @@ module.exports = {
         fourth: "moveHorizontal 40s ease infinite",
         fifth: "moveInCircle 20s ease infinite",
         shimmer: "shimmer 2s linear infinite",
+        "fade-up": "fade-up 0.7s cubic-bezier(0.2, 0.7, 0.2, 1) both",
       },
     },
   },

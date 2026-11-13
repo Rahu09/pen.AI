@@ -8,7 +8,7 @@ const nextConfig = {
         permanent: true,
       },
       {
-        source: "/sign-ip",
+        source: "/sign-up",
         destination: "/api/auth/register",
         permanent: true,
       },

@@ -1,7 +1,7 @@
 # Roadmap
 
 Status key: `[ ]` not started, `[~]` in progress, `[x]` done.
-Phase order is confirmed (D-006): dependencies are upgraded before the dashboard.
+Phase 4 (dashboard) was done before phase 3 (dependencies) at the owner's request (D-014).
 
 ## Phase 1: Docs and context system
 
@@ -62,52 +62,85 @@ Pinecone removal are in phase 2, because the retrieval code is rewritten there.
 
 - [ ] Next.js and React to current majors (async request APIs, `params` as promise)
 - [ ] tRPC 10 to 11 and TanStack Query 4 to 5
-- [ ] Kinde SDK 1 to 2 (`getUser()` becomes async everywhere). Do this early: SDK 1.8 prints the access, ID and refresh tokens to the server log on every sign-in
+- [ ] Kinde SDK 1 to 2 (`getUser()` becomes async everywhere). Recheck `src/middleware.ts`, which reads the SDK's `kinde_token` cookie. Do this early: SDK 1.8 prints the access, ID and refresh tokens to the server log on every sign-in
 - [ ] UploadThing 5 to current (the hardcoded S3 host is already gone)
 - [ ] Prisma and Stripe to current; pin a current Stripe API version
 - [ ] react-pdf to current; self-host the pdf.js worker instead of the CDN URL
+- [ ] `react-resizable-panels` 2 to 4 (API renamed) and the now-unused `react-loading-skeleton` removed
 - [ ] Tailwind 3 to 4 (optional, do last)
 
 ## Phase 4: Dashboard UI upgrade
 
+Built 2026-11-13 (D-014). Design notes: `docs/DESIGN.md`.
+
 Backend support:
 
-- [ ] `getUserFiles`: order in the query, include message count
-- [ ] `renameFile` mutation
-- [ ] `deleteFile`: also remove the upload from UploadThing (chunks and messages now go by foreign-key cascade)
-- [ ] Enforce the file quota from `PLANS`
+- [x] `getUserFiles`: ordered in the query, includes message count
+- [x] `getUploadUsage`: uploads in the current calendar month
+- [x] `renameFile` mutation
+- [x] `deleteFile`: also removes the upload from UploadThing (chunks and messages go by foreign-key cascade)
+- [x] Monthly upload quota from `PLANS` enforced in the upload middleware; `maxFileSizeMb` added to `PLANS`
 
 UI:
 
-- [ ] App shell: sidebar (Files, Billing) and top bar, separate from the marketing navbar (route groups)
-- [ ] Usage strip: plan badge, files used against quota, upgrade button
-- [ ] File card: PDF thumbnail, real message count, status badge, relative date
-- [ ] Card menu: rename, delete with confirmation
-- [ ] Search, sort, grid / list toggle
-- [ ] Whole-page drag and drop upload
-- [ ] Skeletons that match the card layout; empty state with a drop zone
-- [ ] Dark mode (tokens exist in `globals.css`; no toggle, `<html>` is fixed to `light`)
-- [ ] File page: resizable PDF / chat split, tabs on mobile
-- [ ] Write `docs/DESIGN.md` once the direction is agreed
+- [x] App shell: sidebar (Files, Billing) on wide screens, top bar on narrow ones; public pages moved to a `(marketing)` route group
+- [x] Usage card: plan badge, uploads used against quota, upgrade button
+- [x] File card: first-page thumbnail, message count, status badge, relative date
+- [x] Card menu: open, rename, delete with confirmation
+- [x] Search, sort, grid / list toggle (view remembered)
+- [x] Whole-page drag and drop upload, with size, type and quota checks
+- [x] Skeletons that match the layout; empty, no-match and error states
+- [x] Dark mode (light, dark, system) under `/dashboard`
+- [x] File page: resizable PDF / chat split, tabs on narrow screens
+- [x] Billing page restyled inside the shell
+- [x] `docs/DESIGN.md`
+
+Landing page (added at the owner's request the same day):
+
+- [x] Landing page rebuilt: hero with a drawn product preview, how it works, plans from `PLANS`, under the hood
+- [x] Marketing navbar simplified (works at phone width, so `MobileNav` is deleted); footer added
+- [x] Page title and description say pen.AI instead of Quill; `/sign-up` redirect typo fixed
+
+Checked in the browser, signed in, with real data: Files page, thumbnail,
+usage card, rename (changed and changed back), file page with the icon rail,
+billing page, landing page at desktop and phone width. Checked with sample
+data: list view, delete dialog, upload dialog states, dark mode, the split
+divider, PDF / Chat tabs.
+
+Not yet checked:
+
+- [ ] Upload from the button and by drag and drop; the quota message
+- [ ] Deleting a file (also removes it from UploadThing)
+- [ ] Asking a question: messages in the restyled chat
+- [x] Owner's review of the flat design: they preferred the original look (D-015)
+- [x] Original colours and motion brought back as "ink on aurora" (D-015): landing, navbar, footer, pricing, app shell, Files, billing, chat bubbles
+- [x] Aceternity components and `framer-motion` removed (the aurora and the typed headline were rewritten in CSS); `public/dashboard-preview.jpg` and `public/file-upload-preview.jpg` deleted
+- [x] Dark mode on the public pages, and the dark theme reworked to match the design (D-016)
+- [x] Link check: signed-out `/dashboard` now goes to sign-in and returns to the page; pricing "Sign up" buttons go to sign-up; Free card says "Open your files" when signed in
+- [ ] Owner's review of the "ink on aurora" look, light and dark (O-9)
+- [ ] `public/thumbnail.png` (link preview image) still shows the old design
+- [ ] Pricing page shows Pro as "$500": `PLANS` has `price.amount: 500` (cents or dollars is not clear); check what Stripe charges and fix the display
+- [ ] The four `/payment/*` pages are empty stubs
 
 ## Phase 5: Correctness
 
 - [x] `ChatWrapper.tsx`: "Back" on a failed upload was an icon, not a link (wrong `Link` import)
 - [x] Chat history took the oldest 6 messages; now the latest 6, read before the new question is saved
 - [x] Over-limit PDFs were still embedded; the page limit is now checked first
-- [ ] `src/components/chat/ChatWrapper.tsx`: a failed upload always says "Too many pages", whatever the cause (also shown for scanned PDFs with no text, and for processing errors)
-- [ ] `src/components/Dashboard.tsx:49`: sorts the query cache array in place
-- [ ] `src/components/Dashboard.tsx:83`: message count is the literal text "mocked"
-- [ ] `src/components/MobileNav.tsx`: links to `/sign-up` and `/sign-out`, which do not exist; menu icon is `text-zinc-100` on a white bar
-- [ ] `next.config.js`: redirect source `/sign-ip` is a typo for `/sign-up`
+- [~] A failed upload showed "Too many pages" whatever the cause. The text is now neutral ("couldn't be processed"), but the real reason is still not stored or shown
+- [x] Dashboard sorted the query cache array in place (replaced in phase 4)
+- [x] Dashboard message count was the literal text "mocked" (replaced in phase 4)
+- [x] `MobileNav.tsx` had dead links and an invisible icon (deleted; the navbar now fits on a phone)
+- [x] `next.config.js`: redirect source `/sign-ip` fixed to `/sign-up`
 - [ ] `src/config/stripe.ts`: production price ID is empty and the code always reads `priceIds.test`
 - [ ] `prisma/schema.prisma`: `stripeCurrentPeriodEnd` is a string written with `toDateString()`; should be `DateTime`
 - [ ] `src/app/api/webhooks/stripe/route.ts`: `invoice.payment_succeeded` payload is cast to a Checkout Session
 - [x] Indexes on `File.userId`, `Message.fileId`, `Message.userId`
-- [ ] `src/app/pricing/page.tsx`: plan limits are hardcoded in copy instead of read from `PLANS`
-- [ ] `src/app/auth-callback/page.tsx`: validate `origin` before redirecting
-- [ ] `src/app/layout.tsx`: remove the no-op `content` attribute on `<html>`; put `Providers` inside `<body>`
-- [ ] Branding: package name `quill`, metadata title "Quill - the SaaS for students" in `src/lib/utils.ts`
+- [ ] `src/app/(marketing)/pricing/page.tsx`: plan limits are hardcoded in copy instead of read from `PLANS`
+- [ ] `src/app/(marketing)/auth-callback/page.tsx`: validate `origin` before redirecting
+- [ ] Quota counts files that still exist: deleting a file gives the upload back. Count uploads in their own table if that matters
+- [x] `src/app/layout.tsx`: no-op `content` attribute removed; `Providers` is inside `<body>`
+- [~] Branding: page title and description fixed; package name is still `quill`
 - [ ] Remove leftover `console.log` in `src/trpc/index.ts`
 
 ## Phase 6: Quality

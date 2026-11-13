@@ -4,7 +4,7 @@ import { Button } from "./ui/button";
 import { Expand, Loader2 } from "lucide-react";
 import { useToast } from "./ui/use-toast";
 import SimpleBar from "simplebar-react";
-import { Document, Page } from "react-pdf";
+import { Document, Page } from "@/lib/pdfjs";
 import { useResizeDetector } from "react-resize-detector";
 
 interface PdfFullscreenProps {
@@ -28,7 +28,12 @@ const PdfFullscreen = ({ fileUrl }: PdfFullscreenProps) => {
       }}
     >
       <DialogTrigger onClick={() => setIsOpen(true)} asChild>
-        <Button variant="ghost" className="gap-1.5" aria-label="fullscreen">
+        <Button
+          variant="ghost"
+          size="sm"
+          className="gap-1.5"
+          aria-label="Open the whole PDF in a large view"
+        >
           <Expand className="h-4 w-4" />
         </Button>
       </DialogTrigger>

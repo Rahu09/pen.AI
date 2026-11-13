@@ -7,7 +7,7 @@ import { PdfPageLoader } from "@/lib/pdf-loader";
 import { getVectorStore } from "@/lib/vector-store";
 import { CHUNK_OVERLAP, CHUNK_SIZE } from "@/config/ai";
 import { getUserSubscriptionPlan } from "@/lib/stripe";
-import { PLANS } from "@/config/stripe";
+import { getPlan, startOfQuotaPeriod } from "@/config/stripe";
 
 const f = createUploadthing();
 
@@ -18,6 +18,16 @@ const middleware = async () => {
   if (!user || !user.id) throw new Error("Unauthorized");
 
   const subscriptionPlan = await getUserSubscriptionPlan();
+
+  // Enforce the plan's monthly upload quota before the upload starts.
+  const plan = getPlan(subscriptionPlan.isSubscribed);
+  const usedThisPeriod = await db.file.count({
+    where: { userId: user.id, createdAt: { gte: startOfQuotaPeriod() } },
+  });
+
+  if (usedThisPeriod >= plan.quota) {
+    throw new Error("Upload quota reached");
+  }
 
   return { subscriptionPlan, userId: user.id };
 };
@@ -73,9 +83,7 @@ const onUploadComplete = async ({
 
     // 2. Check the plan's page limit before spending anything on embeddings.
     const { isSubscribed } = metadata.subscriptionPlan;
-    const plan = PLANS.find(
-      (plan) => plan.name === (isSubscribed ? "Pro" : "Free")
-    )!;
+    const plan = getPlan(isSubscribed);
 
     const isOverPageLimit = loader.totalPages > plan.pagesPerPdf;
     // A scanned PDF has no text layer, so there is nothing to search.

@@ -1,6 +1,5 @@
-import Dashboard from "@/components/Dashboard";
+import Dashboard from "@/components/dashboard/Dashboard";
 import { db } from "@/db";
-import { getUserSubscriptionPlan } from "@/lib/stripe";
 import { getKindeServerSession } from "@kinde-oss/kinde-auth-nextjs/server";
 import { redirect } from "next/navigation";
 
@@ -18,9 +17,8 @@ const Page = async () => {
 
   if (!dbUser) redirect("/auth-callback?origin=dashboard");
 
-  const subscriptionPlan = await getUserSubscriptionPlan();
-
-  return <Dashboard subscriptionPlan={subscriptionPlan} />;
+  // Plan limits reach the dashboard through the app shell (dashboard/layout).
+  return <Dashboard />;
 };
 
 export default Page;

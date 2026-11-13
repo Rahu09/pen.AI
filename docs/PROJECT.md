@@ -10,8 +10,8 @@ with pgvector. Each question retrieves the most relevant chunks and sends them
 to a chat model. Free and Pro plans differ in file size, pages per PDF and file
 quota. Pro is a Stripe subscription.
 
-The codebase started from the "Quill" tutorial project, and some of that
-branding is still in the code (package name, page metadata).
+The codebase started from the "Quill" tutorial project. The package name in
+`package.json` is still `quill`.
 
 - Repo: https://github.com/Rahu09/pen.AI (public)
 - Deployed at: https://pen-ai.vercel.app (the deployment predates phase 2 and
@@ -30,7 +30,7 @@ branding is still in the code (package name, page metadata).
 | Chat | Google `gemini-3.5-flash-lite` through `@langchain/google` (`ChatGoogle`) | 0.2 |
 | Embeddings | Google `gemini-embedding-001`, 1536 numbers per chunk, through `@langchain/google-genai` | 2.3 |
 | Payments | Stripe | 13.x, API version 2023-08-16 |
-| UI | Tailwind 3.3, shadcn/ui, Aceternity UI, framer-motion, lucide | |
+| UI | Tailwind 3.3, shadcn/ui, lucide, next-themes 0.4, react-resizable-panels 2.1. Fonts through `next/font`: Inter, Instrument Serif, Caveat | |
 | PDF viewer | react-pdf | 7.x |
 | PDF text extraction | pdf.js as bundled in `pdf-parse` 1.1 | |
 
@@ -43,27 +43,37 @@ phase 3).
 ```
 prisma/schema.prisma          User, File, Message, DocumentChunk, UploadStatus
 prisma/migrations/            SQL migrations (the second one enables pgvector)
-src/middleware.ts             Kinde authMiddleware on /dashboard/:path, /auth-callback
+src/middleware.ts             Signed-out visits to /dashboard/* go to Kinde sign-in, then back via /auth-callback
 src/app/
-  page.tsx                    Landing page
-  pricing/page.tsx            Pricing table (limits partly hardcoded here)
-  auth-callback/page.tsx      Syncs the Kinde user into the DB, then redirects
-  dashboard/page.tsx          Server page: auth check, loads plan, renders Dashboard
-  dashboard/[fileid]/page.tsx PDF viewer + chat, side by side
+  layout.tsx                  Root: fonts, providers (theme, tRPC), toaster
+  (marketing)/                Public pages; share the marketing navbar
+    page.tsx                  Landing page (hero, how it works, plans, under the hood)
+    pricing/page.tsx          Pricing table (limits partly hardcoded here)
+    auth-callback/page.tsx    Syncs the Kinde user into the DB, then redirects
+    payment/*                 Static policy pages
+  dashboard/layout.tsx        Signed-in shell: loads user and plan, renders AppShell
+  dashboard/page.tsx          Files page: auth check, renders Dashboard
+  dashboard/[fileid]/page.tsx One file: ownership check, renders FileWorkspace
   dashboard/billing/page.tsx  BillingForm
-  payment/*                   Static policy pages
   api/auth/[kindeAuth]        Kinde handler
   api/trpc/[trpc]             tRPC fetch adapter
-  api/uploadthing             Upload router and ingest pipeline (core.ts)
+  api/uploadthing             Upload router, quota check and ingest pipeline (core.ts)
   api/message                 Chat endpoint: retrieval chain, streams the answer
   api/webhooks/stripe         Stripe webhook
 src/trpc/index.ts             The whole tRPC router
 src/trpc/trpc.ts              publicProcedure / privateProcedure (Kinde check)
-src/components/Dashboard.tsx  File grid (the screen being redesigned)
+src/components/app-shell/*    AppShell, sidebar, mobile header, usage card, theme and account menus, plan context
+src/components/dashboard/*    Files page: container, cards, list rows, toolbar, dialogs, upload, thumbnails
+src/components/file/*         FileWorkspace: resizable PDF and chat, tabs on narrow screens
 src/components/chat/*         ChatWrapper, ChatContext (optimistic + streaming), Messages
 src/components/PdfRenderer.tsx, PdfFullscreen.tsx
-src/components/ui/*           shadcn and Aceternity primitives
-src/config/stripe.ts          PLANS (quota, pagesPerPdf, price IDs)
+src/components/Navbar.tsx, UserAccountNav.tsx   Marketing navbar only
+src/components/Aurora.tsx     The moving gradient (hero, Pro card, app page wash)
+src/components/Wordmark.tsx   Logo: quill in an ink circle, name in the serif
+src/components/marketing/*    TypedHeadline (typed hero title + ink underline), ProductPreview, Bloom, SiteFooter, shared button classes
+src/components/ui/*           shadcn primitives
+src/lib/pdfjs.ts              pdf.js worker setup; import Document and Page from here
+src/config/stripe.ts          PLANS (monthly quota, pagesPerPdf, maxFileSizeMb, price IDs), getPlan()
 src/config/ai.ts              Model names, chunk sizes, how many chunks to retrieve
 src/lib/pdf-loader.ts         PdfPageLoader: PDF to one LangChain Document per page
 src/lib/embeddings.ts         GeminiEmbeddings: text to vectors, separate modes for documents and questions
@@ -92,8 +102,18 @@ creates a `File` row as `PROCESSING` and then:
    the embedding model and inserts text plus vector into `DocumentChunk`.
 5. The file is marked `SUCCESS`.
 
+Before any of that, the upload middleware rejects the upload if the user has
+reached the plan's monthly quota. The browser checks type, size and quota
+first so it can say which limit was hit.
+
 The client polls `getFile` by upload key and then navigates to
 `/dashboard/[fileid]`.
+
+**Files page.** `getUserFiles` returns the user's files, newest first, with a
+message count each. Search, sort and the grid or list view are done in the
+browser. Rename and delete update the list at once and roll back if the server
+refuses. Deleting removes the row (chunks and messages cascade) and then the
+PDF from UploadThing.
 
 **Chat** (`src/app/api/message/route.ts`). After the auth and ownership checks,
 the route reads the latest 6 messages as history, saves the new question, and
@@ -191,4 +211,16 @@ from `.env`.
   `SUCCESS` with 6 embedded chunks.
 - Not verified: the chat route over HTTP (no messages stored yet), file
   deletion from the UI, Stripe.
+- Phase 4 UI and landing page: type-check, lint and build pass. Checked in
+  the browser signed in with real data (Files page, rename, file page,
+  billing, landing at two widths) and with sample data (list view, dialogs,
+  dark mode, split divider, phone tabs). Not yet exercised: upload, delete
+  and chat through the new UI.
+- "Ink on aurora" restyle (2026-11-13, after phase 4): type-check, lint
+  and build pass. Checked in the browser: landing page at 375px, 800px and
+  1440px (typing, underline, no sideways scroll), Files page in light and
+  dark, billing, pricing, the file page.
+- Dark mode on every page and the link check (same day): type-check and
+  lint pass; build not rerun (the dev server was running). Every public
+  and app link clicked or fetched, signed in and signed out.
 - Tests: none. CI: none.

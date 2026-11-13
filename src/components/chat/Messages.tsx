@@ -1,11 +1,11 @@
 import { trpc } from "@/app/_trpc/client";
 import { INFINITE_QUERY_LIMIT } from "@/config/infinite-query";
 import { Loader2, MessageSquare } from "lucide-react";
-import Skeleton from "react-loading-skeleton";
 import Message from "./Message";
 import { useContext, useEffect, useRef } from "react";
 import { ChatContext } from "./ChatContext";
 import { useIntersection } from "@mantine/hooks";
+import { Skeleton } from "../ui/skeleton";
 
 interface MessagesProps {
   fileId: string;
@@ -57,8 +57,10 @@ const Messages = ({ fileId }: MessagesProps) => {
     }
   }, [entry, fetchNextPage]);
 
+  // flex-col-reverse: the newest message is first in the list and sits at the
+  // bottom, so the view stays pinned to the latest message as answers stream.
   return (
-    <div className="flex max-h-[calc(100vh-3.5rem-7rem)] border-zinc-200 flex-1 flex-col-reverse gap-4 p-3 overflow-y-auto scrollbar-thumb-blue scrollbar-thumb-rounded scrollbar-track-blue-lighter scrollbar-w-2 scrolling-touch">
+    <div className="scroll-thin flex min-h-0 flex-1 flex-col-reverse gap-4 overflow-y-auto p-3">
       {combinedMessages && combinedMessages.length > 0 ? (
         combinedMessages.map((message, i) => {
           const isNextMessageSamePerson =
@@ -84,18 +86,28 @@ const Messages = ({ fileId }: MessagesProps) => {
             );
         })
       ) : isLoading ? (
-        <div className="w-full flex flex-col gap-2">
+        <div
+          className="flex w-full flex-col gap-2"
+          aria-busy="true"
+          aria-label="Loading messages"
+        >
           <Skeleton className="h-16" />
           <Skeleton className="h-16" />
           <Skeleton className="h-16" />
           <Skeleton className="h-16" />
         </div>
       ) : (
-        <div className="flex-1 flex flex-col items-center justify-center gap-2">
-          <MessageSquare className="h-8 w-8 text-blue-500" />
-          <h3 className="font-semibold text-xl">You&apos;re all set!</h3>
-          <p className="text-zinc-500 text-sm">
-            Ask your first question to get started.
+        <div className="flex flex-1 flex-col items-center justify-center gap-2 text-center">
+          <MessageSquare
+            className="h-8 w-8 text-primary"
+            aria-hidden="true"
+          />
+          <h2 className="font-serif text-3xl">
+            Ask it <em className="text-primary">anything</em>
+          </h2>
+          <p className="max-w-xs text-sm text-muted-foreground">
+            Answers come from this PDF only. If it isn&apos;t in there,
+            you&apos;ll be told.
           </p>
         </div>
       )}

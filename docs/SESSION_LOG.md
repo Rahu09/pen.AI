@@ -15,6 +15,121 @@ Entry format:
 
 ---
 
+## 2026-11-13: Crash, link check, dark mode everywhere (same chat as below)
+
+- Asked: the app is crashing, use port 3000 next time; check that the
+  dashboard, pricing and login links work; add dark mode to the landing
+  page and make dark mode match the design; remove the hard edge of the
+  colour at the bottom of the landing page.
+- Found: the crash was caused by this chat. It deleted `.next` and ran
+  `pnpm build` while the owner's dev server on port 3000 was using that
+  folder. Do not build while a dev server is running.
+- Done:
+  - `.next` cleared; `.claude/launch.json` pins the preview to port 3000
+    (`autoPort: false`); leftover preview processes on 3002 stopped.
+  - Links: all public and app links work signed in. Signed out, `/dashboard`
+    went to the home page (Kinde 1.8's middleware sends signed-out visitors
+    to the post-logout URL, and its matcher missed `/dashboard`).
+    `src/middleware.ts` now sends them to sign-in and back to the page they
+    asked for. Pricing "Sign up" buttons went to sign-in; now sign-up. The
+    Free card said "Upgrade now" to signed-in users; now "Open your files".
+  - Dark mode (D-016): new dark tokens, aurora night base, theme switch in
+    the marketing navbar, public pages moved to theme tokens, account menu
+    no longer fixed white.
+  - Closing section of the landing page: the bloom was clipped at content
+    width, which left a hard vertical line. A first fix (full-width clip
+    plus fade mask) made the colour all but disappear. It is now two radial
+    glows sized with `closest-side`, which reach transparency exactly at the
+    section's edges, so there is colour and no line.
+- Verified: type-check, lint. In the browser: landing in light and dark at
+  1440 and 375px, Files page in dark, the theme switch, every link. Build
+  not rerun, to keep the dev server alive.
+- Open: O-9. The signed-out round trip through Kinde (sign in, come back to
+  the page) was checked up to the redirect only, since the owner is signed
+  in in the browser.
+- Next: owner reviews light and dark; run `pnpm build` once with the dev
+  server stopped.
+
+## 2026-11-13: "Ink on aurora", the original look brought back
+
+- Asked: keep the colour and animation of the old UI, upgrade it as much as
+  possible, remove the glowing borders around pictures, design it first so
+  it looks unique, then build it.
+- Done:
+  - Design written first in `docs/DESIGN.md` (direction, colour, type,
+    motion) and logged as D-015.
+  - New: `Aurora.tsx` (the old moving gradient, CSS only, pointer blob via
+    requestAnimationFrame), `Wordmark.tsx`, `marketing/TypedHeadline.tsx`
+    (typed serif headline with a travelling caret and an ink underline),
+    `marketing/Bloom.tsx`, `marketing/styles.ts`, `app-shell/PageWash.tsx`.
+  - Landing page rebuilt on the aurora panel with the old headline ("Query
+    your documents in seconds."), product picture as a paper sheet plus
+    chat with margin notes, folio steps, plan cards, a dark "under the
+    hood" band and a closing call to action. Navbar, footer and pricing
+    page restyled; the pricing page lost its blue glow.
+  - App: grain on the shell, aurora wash behind Files and Billing headers,
+    serif page titles, paper cards that lift on hover, ink upload button,
+    gradient usage bar and thumbnail placeholder, rounder chat bubbles, new
+    empty chat text.
+  - Fonts via `next/font` in `src/app/layout.tsx`; `fontFamily`, `paper`
+    shadows and `fade-up` in `tailwind.config.ts`; grain, highlighter and
+    keyframes in `globals.css`.
+  - Deleted: the five Aceternity components, `framer-motion`,
+    `public/dashboard-preview.jpg`, `public/file-upload-preview.jpg`.
+  - Nothing committed.
+- Verified: type-check, lint (clean), production build. In the browser:
+  landing at 375, 800 and 1440px, Files page light and dark, billing,
+  pricing, the file page.
+- Found: Tailwind only emits keyframes for its own `animate-*` classes, so
+  keyframes used from inline styles must live in `globals.css`. A stale
+  `.next` from the dev server made `pnpm build` fail on a missing page;
+  deleting `.next` fixed it. The pricing page shows Pro as "$500".
+- Open: O-9 (owner's review of the look). Upload, delete and chat through
+  the UI are still not exercised.
+- Next: owner looks at the landing and Files pages and says what to
+  change; then phase 3, starting with the Kinde SDK.
+
+## 2026-11-13: Phase 4, dashboard UI (same chat as the entries below)
+
+- Asked: "execute phase 4 first, with all the UI updates" (D-014).
+- Done:
+  - Backend: `getUserFiles` ordered with message counts; `getUploadUsage`;
+    `renameFile`; `deleteFile` also removes the PDF from UploadThing; monthly
+    quota enforced in the upload middleware; `getPlan()` and `maxFileSizeMb`
+    in `src/config/stripe.ts`.
+  - Shell: `(marketing)` route group for the public pages;
+    `dashboard/layout.tsx` with `AppShell` (sidebar, mobile header, usage
+    card, account menu, theme switch); `next-themes` added.
+  - Files page rewritten under `src/components/dashboard/`: cards with
+    first-page thumbnails, list view, search, sort, rename and delete
+    dialogs, upload dialog, page-wide drag and drop, loading / empty /
+    no-match / error states.
+  - File page: `FileWorkspace` with a resizable PDF and chat split
+    (`react-resizable-panels`) and tabs on narrow screens; `PdfRenderer` and
+    the chat components moved to theme tokens and flex layout.
+  - Billing page restyled. `docs/DESIGN.md` written.
+  - Landing page rebuilt at the owner's request mid-way ("update the landing
+    page as well"): new hero with `ProductPreview`, how it works, plans, under
+    the hood; simpler navbar; `SiteFooter`; pen.AI title and description;
+    `/sign-up` redirect fixed. `MobileNav.tsx` deleted.
+  - Deleted: `src/components/Dashboard.tsx`, `src/components/UploadButton.tsx`.
+  - Nothing committed.
+- Verified: type-check, lint, production build. In the browser with a
+  temporary sample-data page (since removed): grid and list, menus, rename
+  and delete dialogs, light and dark, 375px width with no sideways scroll,
+  file page split dragging and PDF / Chat tabs.
+- Later the owner signed in in the browser pane, so the real pages were
+  checked too: Files page with the real file and thumbnail, rename (changed
+  and changed back), file page, billing, landing page at two widths.
+- Not verified: upload, delete and asking a question through the new UI.
+  Delete and chat were left alone because the only file is the owner's own
+  document.
+- Noticed: the animated Aceternity components and `framer-motion` are now
+  unused. Left in place for the owner to decide.
+- Open: O-8 (design review). Phase 2's remaining owner actions.
+- Next: owner signs in and tries the new dashboard; fix what that turns up.
+  Then phase 3, starting with the Kinde SDK.
+
 ## 2026-11-13: Phase 2 code work (same chat as the entry below)
 
 - Asked: "pushed, start phase 2".

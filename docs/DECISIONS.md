@@ -100,7 +100,7 @@ Entry format:
 ## D-006: Upgrade dependencies before the dashboard redesign
 
 - Date: 2026-11-13
-- Status: Accepted
+- Status: Superseded by D-014 (same day)
 - Context: The dashboard redesign is the change the owner most wants, but the
   whole stack is about three years behind.
 - Decision: ROADMAP order stands: phase 3 (dependencies) before phase 4
@@ -280,6 +280,78 @@ Entry format:
     store and PDF loader stands.
   - Not yet exercised against the live API: `GOOGLE_API_KEY` is not in `.env`.
 
+## D-014: Do the dashboard redesign before the dependency upgrade
+
+- Date: 2026-11-13
+- Status: Accepted. Supersedes D-006.
+- Context: With phase 2 working, the owner said "execute phase 4 first, with
+  all the UI updates".
+- Decision: Phase 4 (dashboard UI) was built on the current stack (Next 13.5,
+  tRPC 10, React Query 4). Phase 3 follows.
+- Alternatives: Upgrade first (D-006).
+- Consequences:
+  - The new UI code uses APIs that change in phase 3: `trpc.useContext()`,
+    React Query 4 options such as `isLoading` and `keepPreviousData`, and
+    synchronous `getUser()` and `params`. Expect to touch the new files
+    again during the upgrade.
+  - Two small libraries were added: `next-themes` (theme switching) and
+    `react-resizable-panels` pinned to 2.x.
+  - The design direction is in `docs/DESIGN.md`. It was chosen by Claude
+    while building and is not yet reviewed by the owner.
+  - Quota is enforced as uploads per calendar month, to match the pricing
+    page's "PDFs/mo".
+
+## D-015: Bring back the original look, as "ink on aurora"
+
+- Date: 2026-11-13
+- Status: Accepted (direction asked for by the owner; the details were
+  designed by Claude and are not yet reviewed, see O-9). Resolves O-8.
+- Context: After seeing the flat phase 4 design, the owner said they "still
+  liked the old UI look": keep its colour and animation, upgrade it as much
+  as possible, remove the glowing borders around pictures, and design it so
+  it looks unique rather than machine-made.
+- Decision: Keep the original palette (periwinkle to lilac gradient with
+  drifting blue, magenta, cyan, red and plum blobs; the pink-to-violet
+  bloom; blue 600 accent) and its motion (moving gradient, typed headline).
+  Build everything around it from paper and ink: Instrument Serif
+  headlines with an italic accent word, a hand-drawn underline that draws
+  itself, highlighter marks on matched passages, two handwritten margin
+  notes, paper-sheet cards with a soft shadow. No glowing or animated
+  borders, no gradient text. The app gets a dimmed aurora wash behind page
+  headers and serif page titles; dark mode keeps working. Written up in
+  `docs/DESIGN.md`.
+- Alternatives:
+  - Keep the flat phase 4 design (rejected by the owner).
+  - Restore the old Aceternity components as they were: they include the
+    glowing borders the owner wants gone, re-render React on every mouse
+    move, and use `framer-motion` for effects CSS can do.
+- Consequences:
+  - The Aceternity components and `framer-motion` are deleted; the aurora
+    (`src/components/Aurora.tsx`) and the typed headline
+    (`src/components/marketing/TypedHeadline.tsx`) are plain CSS, and both
+    stand still under `prefers-reduced-motion`.
+  - Two more Google fonts (Instrument Serif, Caveat) load on every page.
+  - The landing page uses fixed zinc colours and stays light only.
+
+## D-016: Dark mode on every page, in the "ink on aurora" style
+
+- Date: 2026-11-13
+- Status: Accepted (asked for by the owner; the palette was chosen by Claude
+  and is part of the O-9 review).
+- Context: The owner asked for dark mode on the landing page too, and for
+  the dark theme to match the design in D-015. Until then public pages were
+  forced to light, and the app's dark theme used shadcn's default slate.
+- Decision: Themes apply on every page, with a switch in the marketing
+  navbar. Dark tokens move to an indigo-black page and lighter blue accent;
+  the aurora gets a deep indigo base. Public pages use theme tokens instead
+  of fixed zinc colours. PDF pages stay white; the "under the hood" band
+  stays ink. Details in `docs/DESIGN.md`.
+- Alternatives: Keep public pages light only (the D-015 state; rejected by
+  the owner's request). Keep shadcn's slate dark theme (does not belong to
+  the aurora palette).
+- Consequences: Any new public-page markup must use theme tokens. A visitor
+  whose system is dark sees the landing page dark by default.
+
 ---
 
 # Open decisions
@@ -289,6 +361,7 @@ Not yet decided by the owner. Recommendations are Claude's and are not binding.
 | # | Question | Options | Recommendation |
 |---|---|---|---|
 | O-7 | Confirm D-012 (own vector store and PDF loader on LangChain core)? | Keep it; or switch to the official `@langchain/pgvector` store | Keep it |
+| O-9 | Is the "ink on aurora" look, light and dark (D-015, D-016, `docs/DESIGN.md`), what you want? | Keep it; or name what to change | Look at the landing page and Files page in the browser |
 
-Resolved: O-1 became D-004, O-2 became D-005, O-3 became D-006, O-4 became
+Resolved: O-8 became D-015. O-1 became D-004, O-2 became D-005, O-3 became D-006, O-4 became
 D-009, O-5 became D-010 and then D-011, O-6 became D-007 and then D-008.

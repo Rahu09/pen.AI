@@ -6,7 +6,8 @@ import { z } from "zod";
 import { INFINITE_QUERY_LIMIT } from "@/config/infinite-query";
 import { absoluteUrl } from "@/lib/utils";
 import { getUserSubscriptionPlan, stripe } from "@/lib/stripe";
-import { PLANS } from "@/config/stripe";
+import { PLANS, startOfQuotaPeriod } from "@/config/stripe";
+import { utapi } from "uploadthing/server";
 
 export const appRouter = router({
   authCallback: publicProcedure.query(async () => {
@@ -49,8 +50,46 @@ export const appRouter = router({
       where: {
         userId,
       },
+      orderBy: {
+        createdAt: "desc",
+      },
+      include: {
+        // number of chat messages, shown on each file card
+        _count: { select: { messages: true } },
+      },
     });
   }),
+
+  // How many PDFs the user has uploaded in the current quota period.
+  getUploadUsage: privateProcedure.query(async ({ ctx }) => {
+    const used = await db.file.count({
+      where: {
+        userId: ctx.userId,
+        createdAt: { gte: startOfQuotaPeriod() },
+      },
+    });
+
+    return { used };
+  }),
+
+  renameFile: privateProcedure
+    .input(
+      z.object({
+        id: z.string(),
+        name: z.string().trim().min(1).max(120),
+      })
+    )
+    .mutation(async ({ ctx, input }) => {
+      // updateMany so the ownership check is part of the same query
+      const { count } = await db.file.updateMany({
+        where: { id: input.id, userId: ctx.userId },
+        data: { name: input.name },
+      });
+
+      if (count === 0) throw new TRPCError({ code: "NOT_FOUND" });
+
+      return { id: input.id, name: input.name };
+    }),
 
   createStripeSession: privateProcedure.mutation(async ({ ctx }) => {
     const { userId } = ctx;
@@ -188,13 +227,23 @@ export const appRouter = router({
         },
       });
 
-      if (!file) throw new TRPCError({ code: "UNAUTHORIZED" });
+      if (!file) throw new TRPCError({ code: "NOT_FOUND" });
 
+      // Removes the row. Its chunks (vectors) and messages go with it through
+      // the database's ON DELETE CASCADE.
       await db.file.delete({
         where: {
           id: input.id,
         },
       });
+
+      // Remove the PDF itself from UploadThing. If this fails the file is
+      // already gone for the user, so log it instead of failing the request.
+      try {
+        await utapi.deleteFiles(file.key);
+      } catch (err) {
+        console.error("Could not delete upload from UploadThing", file.key, err);
+      }
 
       return file;
     }),

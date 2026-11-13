@@ -50,12 +50,12 @@ const UserAccountNav = async ({
           </Avatar>
         </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent className="bg-white" align="end">
+      <DropdownMenuContent align="end">
         <div className="flex items-center justify-start gap-2 p-2">
           <div className="flex flex-col space-y-0.5 leading-none">
-            {name && <p className="font-medium text-sm text-black"> {name}</p>}
+            {name && <p className="font-medium text-sm text-foreground"> {name}</p>}
             {email && (
-              <p className="w-[200px] truncate text-xs text-zinc-700">
+              <p className="w-[200px] truncate text-xs text-muted-foreground">
                 {" "}
                 {email}
               </p>
@@ -74,7 +74,7 @@ const UserAccountNav = async ({
             <Link href="/dashboard/billing">Manage Subscription</Link>
           ) : (
             <Link href="/pricing">
-              Upgrade <Gem className="text-blue-600 h-4 w-4 ml-1.5" />
+              Upgrade <Gem className="text-primary h-4 w-4 ml-1.5" />
             </Link>
           )}
         </DropdownMenuItem>
