@@ -10,12 +10,12 @@ Pen.AI utilizes AI technologies to enable users to interact with PDF documents i
 
 - **Easy Authentication using Kinde**: Utilize kinde auth for fast and easy authentication.
 - **Optimistic Update and Infinite Query**: Applied UI features like Optimistic Update and Infinite Query for seamless user expirence.
-- **AI-Powered Document Interaction**: Utilize OpenAI api to analyze and interact with PDF documents in real-time.
+- **AI-Powered Document Interaction**: Utilize Google's Gemini models to analyze and interact with PDF documents in real-time.
 - **Next.js for Frontend and trpc for Backend**: Built with Next.js for efficient frontend and trpc for backend development.
 - **Prisma and PostgreSQL for Database Interaction**: Seamlessly interact with databases for efficient data storage and retrieval.
 - **Tailwind, Shadcn & aceternity ui for Responsive Interface**: Crafted with Tailwind CSS and Shadcn and Aceternity UI for a visually appealing and responsive user interface.
 - **Uploadthing for File Uploading**: Efficiently upload and manage PDF files using Uploadthing(Thanks Theo!!).
-- **Pinecone for AI-Powered PDF Query Capabilities**: Enable advanced search and query capabilities using Pinecone's vector database.
+- **LangChain and pgvector for PDF Search**: Each PDF is split into chunks, embedded, and stored in PostgreSQL with the pgvector extension; LangChain runs the retrieval pipeline that finds the right passages for each question.
 - **Stripe Integration for Subscription Payments**: Seamlessly manage subscription payments using Stripe for uninterrupted access to Pen.AI's full potential.
 
 ## Video Demo
@@ -33,9 +33,12 @@ To get started with Pen.AI, follow these steps:
 1. Clone the repository: `git clone https://github.com/Rahu09/pen.AI.git`
 2. Install dependencies: `pnpm install`
 3. Configure environment variables:
-   - Copy `.env.example` to `.env` and fill in the values for the database (Prisma, PostgreSQL), Kinde Auth, Uploadthing, Pinecone, OpenAI and Stripe.
-4. Run the development server: `pnpm dev`
-5. Access Pen.AI via your web browser at `http://localhost:3000`
+   - Copy `.env.example` to `.env` and fill in the values for the database (Prisma, PostgreSQL), Kinde Auth, Uploadthing, Google Gemini and Stripe.
+4. Create the database tables: `pnpm exec prisma migrate deploy`
+5. Run the development server: `pnpm dev`
+6. Access Pen.AI via your web browser at `http://localhost:3000`
+
+Requires Node.js 22 or newer.
 
 Project documentation lives in [`docs/`](docs/): architecture in `PROJECT.md`, planned work in `ROADMAP.md`, and the decision log in `DECISIONS.md`.
 

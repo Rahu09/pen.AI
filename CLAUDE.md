@@ -1,7 +1,8 @@
 # pen.AI
 
-Chat-with-your-PDF SaaS. Next.js App Router, tRPC, Prisma/Postgres, Kinde auth,
-UploadThing, Pinecone + OpenAI, Stripe. Package manager is **pnpm**.
+Chat-with-your-PDF SaaS. Next.js App Router, tRPC, Prisma/Postgres (Neon, with
+pgvector), Kinde auth, UploadThing, LangChain + Google Gemini, Stripe. Package manager
+is **pnpm** (10+), Node 22+.
 
 ## Before you do any work
 
@@ -40,6 +41,7 @@ pnpm dev              # http://localhost:3000
 pnpm build
 pnpm lint
 pnpm exec tsc --noEmit
+pnpm exec prisma migrate deploy   # apply migrations (needs DIRECT_URL)
 ```
 
 There are no tests yet (see ROADMAP phase 6).
@@ -54,6 +56,13 @@ There are no tests yet (see ROADMAP phase 6).
   anything that touches user data and always scope queries by `userId`.
 - Plan limits come from `src/config/stripe.ts` (`PLANS`). Do not hardcode limits
   elsewhere.
+- Model names and retrieval settings come from `src/config/ai.ts`. The
+  embedding size there must match the `vector(N)` column in the Prisma schema.
+- Vector reads and writes go through `src/lib/vector-store.ts` only. It is the
+  one place that uses raw SQL.
+- The owner is building this as interview material and wants to be able to
+  explain it. When you add or change retrieval code, explain what it does
+  underneath, in the code comments and in your reply.
 
 ## Rules
 

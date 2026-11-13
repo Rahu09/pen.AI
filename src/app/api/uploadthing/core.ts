@@ -2,11 +2,10 @@ import { createUploadthing, type FileRouter } from "uploadthing/next";
 
 import { getKindeServerSession } from "@kinde-oss/kinde-auth-nextjs/server";
 import { db } from "@/db";
-import { Document } from "langchain/document";
-import { PDFLoader } from "langchain/document_loaders/fs/pdf";
-import { OpenAIEmbeddings } from "langchain/embeddings/openai";
-import { PineconeStore } from "langchain/vectorstores/pinecone";
-import { getPineconeClient } from "@/lib/pinecone";
+import { RecursiveCharacterTextSplitter } from "@langchain/textsplitters";
+import { PdfPageLoader } from "@/lib/pdf-loader";
+import { getVectorStore } from "@/lib/vector-store";
+import { CHUNK_OVERLAP, CHUNK_SIZE } from "@/config/ai";
 import { getUserSubscriptionPlan } from "@/lib/stripe";
 import { PLANS } from "@/config/stripe";
 
@@ -47,95 +46,64 @@ const onUploadComplete = async ({
       key: file.key,
       name: file.name,
       userId: metadata.userId,
-      url: `https://uploadthing-prod.s3.us-west-2.amazonaws.com/${file.key}`,
+      // The address UploadThing serves the file from. Used by the PDF viewer
+      // in the browser and by the processing step below.
+      url: file.url,
       uploadStatus: "PROCESSING",
     },
   });
+  const markFile = (uploadStatus: "FAILED" | "SUCCESS") =>
+    db.file.update({
+      data: { uploadStatus },
+      where: { id: createdFile.id },
+    });
+
   try {
-    const response = await fetch(
-      `https://uploadthing-prod.s3.us-west-2.amazonaws.com/${file.key}`
-    );
+    const response = await fetch(file.url);
+
+    if (!response.ok) {
+      throw new Error(`Could not download the uploaded PDF: ${response.status}`);
+    }
 
     const blob = await response.blob();
 
-    const loader = new PDFLoader(blob);
+    // 1. Load: one LangChain Document per PDF page.
+    const loader = new PdfPageLoader(blob);
+    const pageDocs = await loader.load();
 
-    const pageLevelDocs = await loader.load();
+    // 2. Check the plan's page limit before spending anything on embeddings.
+    const { isSubscribed } = metadata.subscriptionPlan;
+    const plan = PLANS.find(
+      (plan) => plan.name === (isSubscribed ? "Pro" : "Free")
+    )!;
 
-    const newPage = pageLevelDocs.map((doc) => {
-      const pageContent = doc.pageContent;
-      const metadata = (doc.metadata = {
-        ...doc.metadata,
-        fileId: createdFile.id,
-      });
-      return new Document({
-        pageContent,
-        metadata,
-      });
-    });
+    const isOverPageLimit = loader.totalPages > plan.pagesPerPdf;
+    // A scanned PDF has no text layer, so there is nothing to search.
+    const hasNoText = pageDocs.length === 0;
 
-    const pagesAmt = pageLevelDocs.length;
-
-    const { subscriptionPlan } = metadata;
-    const { isSubscribed } = subscriptionPlan;
-
-    const isProExceeded =
-      pagesAmt > PLANS.find((plan) => plan.name === "Pro")!.pagesPerPdf;
-    const isFreeExceeded =
-      pagesAmt > PLANS.find((plan) => plan.name === "Free")!.pagesPerPdf;
-
-    if ((isSubscribed && isProExceeded) || (!isSubscribed && isFreeExceeded)) {
-      await db.file.update({
-        data: {
-          uploadStatus: "FAILED",
-        },
-        where: {
-          id: createdFile.id,
-        },
-      });
-    } else {
+    if (isOverPageLimit || hasNoText) {
+      await markFile("FAILED");
+      return;
     }
 
-    // vectorize and index entire document
-    const pinecone = await getPineconeClient();
-    const pineconeIndex = pinecone.Index("quill");
-
-    const embeddings = new OpenAIEmbeddings({
-      openAIApiKey: process.env.OPENAI_API_KEY,
+    // 3. Split: cut each page into overlapping chunks. Smaller pieces make
+    //    the search more precise, and the overlap keeps a sentence that
+    //    straddles a boundary intact in at least one chunk. Each chunk keeps
+    //    its page number.
+    const splitter = new RecursiveCharacterTextSplitter({
+      chunkSize: CHUNK_SIZE,
+      chunkOverlap: CHUNK_OVERLAP,
     });
+    const chunks = await splitter.splitDocuments(pageDocs);
 
-    await PineconeStore.fromDocuments(newPage, embeddings, {
-      pineconeIndex,
-    });
+    // 4. Embed and store: every chunk becomes a vector saved next to its
+    //    text in Postgres (see src/lib/vector-store.ts).
+    await getVectorStore(createdFile.id).addDocuments(chunks);
 
-    if ((isSubscribed && isProExceeded) || (!isSubscribed && isFreeExceeded)) {
-      await db.file.update({
-        data: {
-          uploadStatus: "FAILED",
-        },
-        where: {
-          id: createdFile.id,
-        },
-      });
-    } else {
-      await db.file.update({
-        data: {
-          uploadStatus: "SUCCESS",
-        },
-        where: {
-          id: createdFile.id,
-        },
-      });
-    }
+    await markFile("SUCCESS");
   } catch (err) {
-    await db.file.update({
-      data: {
-        uploadStatus: "FAILED",
-      },
-      where: {
-        id: createdFile.id,
-      },
-    });
+    console.error("PDF processing failed", err);
+    await markFile("FAILED");
   }
 };
 

@@ -88,7 +88,7 @@ Entry format:
 ## D-005: Keep OpenAI for chat and embeddings
 
 - Date: 2026-11-13
-- Status: Accepted ("for now", in the owner's words)
+- Status: Superseded by D-013 (same day)
 - Context: `gpt-3.5-turbo` is hardcoded and has to be replaced. Claude raised
   switching chat to Claude with OpenAI kept for embeddings.
 - Decision: Stay on OpenAI for both.
@@ -215,6 +215,71 @@ Entry format:
   was dropped). All hashes changed, so the hashes quoted above are pre-rewrite:
   `c86c60a` is now `e629269` and `4648d9f` is now `b4511f2`. Not yet pushed.
 
+## D-012: Own vector store and PDF loader on top of LangChain core
+
+- Date: 2026-11-13
+- Status: Made by Claude while implementing phase 2. Not yet confirmed by the
+  owner.
+- Context: D-009 said to use LangChain's pgvector vector store. At install time
+  `@langchain/community`, the package that holds LangChain's Prisma vector
+  store and its PDF loader, turned out to be retired by its maintainers
+  ("sunset ... effective immediately"). The official standalone replacement,
+  `@langchain/pgvector`, stores only id, text, vector and a JSON metadata
+  column through a separate `pg` connection, so it cannot have a real `fileId`
+  foreign key, which D-008 relies on for cascading deletes.
+- Decision: Depend only on `@langchain/core`, `@langchain/openai` and
+  `@langchain/textsplitters`. Write two small classes on LangChain's own base
+  classes: `DocumentChunkVectorStore extends VectorStore`
+  (`src/lib/vector-store.ts`, raw SQL through Prisma) and
+  `PdfPageLoader extends BaseDocumentLoader` (`src/lib/pdf-loader.ts`).
+  Everything above them is standard LangChain: splitter, retriever, prompt
+  template, chain, chat model, streaming.
+- Alternatives:
+  - `@langchain/community` anyway: works today, but it is a retired package
+    with a very large dependency tree.
+  - `@langchain/pgvector`: official, but a second database connection layer and
+    no foreign key, so file deletion would need its own cleanup code again.
+- Consequences:
+  - About 150 lines of our own code to maintain, including the only raw SQL in
+    the app.
+  - The SQL that does the similarity search is in the repo and readable, which
+    serves the goal of being able to explain it.
+  - The direct `ai` and `openai` dependencies were removed, since LangChain now
+    makes the model calls and the route streams the text itself.
+  - Chat model chosen under D-005: `gpt-6-luna`, OpenAI's most efficient model
+    at the time, with low reasoning effort. Not yet exercised against the live
+    API because the stored OpenAI key is invalid.
+
+## D-013: Google Gemini for chat and embeddings
+
+- Date: 2026-11-13
+- Status: Accepted. Supersedes D-005.
+- Context: After the phase 2 code was written for OpenAI, the stored OpenAI
+  key turned out to be invalid. The owner then said "the ai model is gemini".
+  They did not say whether that covered embeddings too; Claude applied it to
+  both so that only one provider and one key are needed.
+- Decision: Chat uses `gemini-3.5-flash-lite` through `@langchain/google`
+  (`ChatGoogle`). Embeddings use `gemini-embedding-001` at 1536 dimensions
+  through `@langchain/google-genai`, wrapped in `GeminiEmbeddings`
+  (`src/lib/embeddings.ts`). The key is `GOOGLE_API_KEY`.
+- Alternatives:
+  - OpenAI (D-005): needs a paid key; the old one no longer works.
+  - Gemini for chat with OpenAI for embeddings: two providers and two keys for
+    no benefit.
+- Consequences:
+  - Both models are on the Gemini API free tier, which has rate limits. A large
+    PDF or several uploads in a row may be throttled.
+  - `@langchain/google` (the package LangChain recommends for new projects) has
+    no embeddings class yet, so embeddings use `@langchain/google-genai`, which
+    LangChain keeps under long-term support but calls legacy. Move embeddings
+    to `@langchain/google` when it gains an embeddings class.
+  - The vector column stays `vector(1536)`, so the migration written for D-008
+    is unchanged.
+  - `@langchain/openai` is removed. The parts of D-012 that name OpenAI
+    packages and `gpt-6-luna` no longer apply; its decision about the vector
+    store and PDF loader stands.
+  - Not yet exercised against the live API: `GOOGLE_API_KEY` is not in `.env`.
+
 ---
 
 # Open decisions
@@ -223,7 +288,7 @@ Not yet decided by the owner. Recommendations are Claude's and are not binding.
 
 | # | Question | Options | Recommendation |
 |---|---|---|---|
-| - | None at present | | |
+| O-7 | Confirm D-012 (own vector store and PDF loader on LangChain core)? | Keep it; or switch to the official `@langchain/pgvector` store | Keep it |
 
 Resolved: O-1 became D-004, O-2 became D-005, O-3 became D-006, O-4 became
 D-009, O-5 became D-010 and then D-011, O-6 became D-007 and then D-008.

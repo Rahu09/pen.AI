@@ -1,13 +1,51 @@
 import { db } from "@/db";
-import { openai } from "@/lib/openai";
-import { getPineconeClient } from "@/lib/pinecone";
+import { getVectorStore } from "@/lib/vector-store";
 import { SendMessageValidator } from "@/lib/validators/SendMessageValidator";
+import { CHAT_MODEL, HISTORY_MESSAGES, RETRIEVAL_TOP_K } from "@/config/ai";
 import { getKindeServerSession } from "@kinde-oss/kinde-auth-nextjs/server";
-import { OpenAIEmbeddings } from "langchain/embeddings/openai";
-import { PineconeStore } from "langchain/vectorstores/pinecone";
+import type { Document } from "@langchain/core/documents";
+import {
+  AIMessage,
+  HumanMessage,
+  type BaseMessage,
+} from "@langchain/core/messages";
+import { StringOutputParser } from "@langchain/core/output_parsers";
+import {
+  ChatPromptTemplate,
+  MessagesPlaceholder,
+} from "@langchain/core/prompts";
+import { RunnableSequence } from "@langchain/core/runnables";
+import { ChatGoogle } from "@langchain/google";
 import { NextRequest } from "next/server";
 
-import { OpenAIStream, StreamingTextResponse } from "ai";
+type ChainInput = {
+  question: string;
+  history: BaseMessage[];
+};
+
+const prompt = ChatPromptTemplate.fromMessages([
+  [
+    "system",
+    `You answer questions about a PDF the user has uploaded.
+Answer in markdown, using only the context below and the conversation so far.
+Each piece of context starts with the page it came from.
+If the answer is not in the context, say that you don't know. Do not make one up.
+
+CONTEXT:
+{context}`,
+  ],
+  new MessagesPlaceholder("history"),
+  ["human", "{question}"],
+]);
+
+/** Joins the retrieved chunks into one block of text, labelled by page. */
+const formatContext = (documents: Document[]) =>
+  documents
+    .map(
+      (document) =>
+        `[Page ${document.metadata.pageNumber}]\n${document.pageContent}`
+    )
+    .join("\n\n---\n\n");
 
 export const POST = async (req: NextRequest) => {
   // endpoint for asking a question to a pdf file
@@ -32,6 +70,24 @@ export const POST = async (req: NextRequest) => {
 
   if (!file) return new Response("Not found", { status: 404 });
 
+  // The latest few messages, oldest first. Read before the new question is
+  // saved so the question is not sent twice.
+  const recentMessages = await db.message.findMany({
+    where: {
+      fileId,
+    },
+    orderBy: {
+      createdAt: "desc",
+    },
+    take: HISTORY_MESSAGES,
+  });
+
+  const history = recentMessages
+    .reverse()
+    .map((msg) =>
+      msg.isUserMessage ? new HumanMessage(msg.text) : new AIMessage(msg.text)
+    );
+
   await db.message.create({
     data: {
       text: message,
@@ -41,81 +97,62 @@ export const POST = async (req: NextRequest) => {
     },
   });
 
-  // 1: vectorize message
-  const embeddings = new OpenAIEmbeddings({
-    openAIApiKey: process.env.OPENAI_API_KEY,
-  });
+  // The retriever embeds the question and returns this file's closest chunks.
+  const retriever = getVectorStore(file.id).asRetriever({ k: RETRIEVAL_TOP_K });
 
-  const pinecone = await getPineconeClient();
-  const pineconeIndex = pinecone.Index("quill");
+  // Reads GOOGLE_API_KEY from the environment.
+  const model = new ChatGoogle({ model: CHAT_MODEL });
 
-  const vectorStore = await PineconeStore.fromExistingIndex(embeddings, {
-    pineconeIndex,
-  });
-
-  const results = await vectorStore.similaritySearch(message, 4, {
-    fileId: file.id,
-  });
-
-  const prevMessages = await db.message.findMany({
-    where: {
-      fileId,
+  // The whole retrieval-augmented generation pipeline as one chain:
+  //   1. look up context for the question (and pass question + history along)
+  //   2. fill in the prompt
+  //   3. call the model
+  //   4. reduce the model's output to plain text
+  const chain = RunnableSequence.from<ChainInput, string>([
+    {
+      context: async (input: ChainInput) =>
+        formatContext(await retriever.invoke(input.question)),
+      question: (input: ChainInput) => input.question,
+      history: (input: ChainInput) => input.history,
     },
-    orderBy: {
-      createdAt: "asc",
-    },
-    take: 6,
-  });
+    prompt,
+    model,
+    new StringOutputParser(),
+  ]);
 
-  const formattedPrevMessages = prevMessages.map((msg) => ({
-    role: msg.isUserMessage ? ("user" as const) : ("assistant" as const),
-    content: msg.text,
-  }));
+  const answerStream = await chain.stream({ question: message, history });
 
-  const response = await openai.chat.completions.create({
-    model: "gpt-3.5-turbo",
-    temperature: 0,
-    stream: true,
-    messages: [
-      {
-        role: "system",
-        content:
-          "Use the following pieces of context (or previous conversaton if needed) to answer the users question in markdown format.",
-      },
-      {
-        role: "user",
-        content: `Use the following pieces of context (or previous conversaton if needed) to answer the users question in markdown format. \nIf you don't know the answer, just say that you don't know, don't try to make up an answer.
-        
-  \n----------------\n
-  
-  PREVIOUS CONVERSATION:
-  ${formattedPrevMessages.map((message) => {
-    if (message.role === "user") return `User: ${message.content}\n`;
-    return `Assistant: ${message.content}\n`;
-  })}
-  
-  \n----------------\n
-  
-  CONTEXT:
-  ${results.map((r) => r.pageContent).join("\n\n")}
-  
-  USER INPUT: ${message}`,
-      },
-    ],
-  });
+  // Forward the answer to the browser piece by piece, and save the complete
+  // answer once the model has finished.
+  const encoder = new TextEncoder();
+  let answer = "";
 
-  const stream = OpenAIStream(response, {
-    async onCompletion(completion) {
-      await db.message.create({
-        data: {
-          text: completion,
-          isUserMessage: false,
-          fileId,
-          userId,
-        },
-      });
+  const responseStream = new ReadableStream<Uint8Array>({
+    async start(controller) {
+      try {
+        for await (const piece of answerStream) {
+          answer += piece;
+          controller.enqueue(encoder.encode(piece));
+        }
+
+        await db.message.create({
+          data: {
+            text: answer,
+            isUserMessage: false,
+            fileId,
+            userId,
+          },
+        });
+
+        controller.close();
+      } catch (err) {
+        console.error("Answer stream failed", err);
+        controller.error(err);
+      }
     },
   });
 
-  return new StreamingTextResponse(stream);
+  return new Response(responseStream, {
+    headers: { "Content-Type": "text/plain; charset=utf-8" },
+  });
 };
