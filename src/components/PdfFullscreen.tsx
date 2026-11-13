@@ -5,7 +5,7 @@ import { Expand, Loader2 } from "lucide-react";
 import { useToast } from "./ui/use-toast";
 import SimpleBar from "simplebar-react";
 import { Document, Page } from "@/lib/pdfjs";
-import { useResizeDetector } from "react-resize-detector";
+import { useElementSize } from "@mantine/hooks";
 
 interface PdfFullscreenProps {
   fileUrl: string;
@@ -16,7 +16,9 @@ const PdfFullscreen = ({ fileUrl }: PdfFullscreenProps) => {
   const [numPages, setNumPages] = useState<number>();
 
   const { toast } = useToast();
-  const { width, ref } = useResizeDetector();
+  // Measured with a ResizeObserver; react-resize-detector stopped reporting
+  // widths on Next 14, which left the page blank.
+  const { ref, width } = useElementSize();
 
   return (
     <Dialog

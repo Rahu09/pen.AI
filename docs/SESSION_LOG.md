@@ -15,6 +15,39 @@ Entry format:
 
 ---
 
+## 2026-11-13: Dependency upgrades, first batch (same chat as below)
+
+- Asked: start the remaining dependency upgrades.
+- Done:
+  - `react-resizable-panels` 2 to 4.15.3. `FileWorkspace` uses `Group`,
+    `Panel`, `Separator`; the split is remembered with `useDefaultLayout`
+    through a small storage wrapper (the hook reads localStorage during
+    the server render, which crashed the file page with a 500).
+    4.16+ imports React 19's `Activity`: dev mode works, the production
+    build fails. Pinned to 4.15.3 until React 19.
+  - react-pdf: 10 was tried and reverted. pdf.js 5 fails to load under
+    Next 14's webpack, in the browser as well as on the server. Stays on
+    7.7.3 with `pdfjs-dist` 3.11.174 pinned to match; the worker is now
+    bundled and served from our own origin instead of cdnjs.
+  - Found: the PDF viewer and fullscreen view had been blank since the
+    Next 14 upgrade (`react-resize-detector` reported no width, the same
+    bug as the thumbnails). Both now use Mantine's `useElementSize`, the
+    viewer debounced with `useDebouncedValue`. `react-resize-detector`
+    removed.
+  - The viewer loads browser-only (`next/dynamic`, `ssr: false`).
+  - Removed unused `react-loading-skeleton`, `react-element-to-jsx-string`,
+    `@tabler/icons-react`.
+- Verified: type-check, lint, 43 tests, production build. In the browser:
+  file page at 1440px (PDF renders, divider drags, redraws at the new
+  width, split survives a reload), fullscreen view, Files thumbnails; the
+  worker loads from localhost, no cdnjs request.
+- Blocked: UploadThing 7 needs `UPLOADTHING_TOKEN` from the owner.
+- Port 3000 was taken by a process started at 19:23 that Claude did not
+  start; it was left alone and used for the browser checks.
+- Next: UploadThing 7 once the token is in `.env`; then Prisma and Stripe,
+  tRPC 11 and React Query 5, Next 15/16 with React 19 (and react-pdf 11,
+  panels unpinned).
+
 ## 2026-11-13: Tests and CI (same chat as below)
 
 - Asked: add tests and CI (ROADMAP phase 6).
@@ -33,7 +66,8 @@ Entry format:
   `deleteFile`) made a test fail; restored. Every CI step run locally with
   the workflow's placeholder env: install (frozen lockfile), type-check,
   lint, test and build all pass.
-- Not verified: the workflow on GitHub (runs after the owner pushes).
+- Verified on GitHub (owner): CI run #1 on `c7f29ee` is green, 43 tests,
+  1m 30s.
 - Next: owner pushes and checks the CI run. Then the remaining upgrades
   (UploadThing, react-pdf, react-resizable-panels, Prisma and Stripe,
   tRPC 11 and React Query 5, Next 15/16), each checked by the suite.

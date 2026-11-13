@@ -397,6 +397,24 @@ Entry format:
   - `core.ts` exports its upload middleware, and the redirect check moved
     to `src/lib/safe-redirect.ts`, so both can be tested.
 
+## D-019: Pin react-pdf 7 and react-resizable-panels 4.15 until React 19
+
+- Date: 2026-11-13
+- Status: Accepted (owner asked for the upgrades; the pins were forced by
+  build failures and chosen by Claude).
+- Context: react-pdf 10 (pdf.js 5) does not load under Next 14's webpack,
+  react-pdf 11 needs React 19, and react-resizable-panels 4.16+ imports
+  React 19's `Activity`, which fails the production build on React 18.
+- Decision: Keep react-pdf 7.7.3 with `pdfjs-dist` 3.11.174 (exact pins,
+  the two must match) but serve the worker from our own build; pin
+  react-resizable-panels to 4.15.3. Revisit both in the Next 15/16 and
+  React 19 step.
+- Alternatives: Webpack workarounds for pdf.js 5 on Next 14 (fragile, and
+  thrown away at the Next upgrade). Staying on panels 2 (its API is gone
+  in 4, so the port would be done later anyway).
+- Consequences: Two exact pins in package.json that a routine update must
+  not loosen. ROADMAP phase 3 lists them under the Next 15/16 item.
+
 ---
 
 # Open decisions

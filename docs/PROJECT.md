@@ -30,8 +30,8 @@ The codebase started from the "Quill" tutorial project. The package name in
 | Chat | Google `gemini-3.5-flash-lite` through `@langchain/google` (`ChatGoogle`) | 0.2 |
 | Embeddings | Google `gemini-embedding-001`, 1536 numbers per chunk, through `@langchain/google-genai` | 2.3 |
 | Payments | Stripe | 13.x, API version 2023-08-16 |
-| UI | Tailwind 3.3, shadcn/ui, lucide, next-themes 0.4, react-resizable-panels 2.1. Fonts through `next/font`: Inter, Instrument Serif, Caveat | |
-| PDF viewer | react-pdf | 7.x |
+| UI | Tailwind 3.3, shadcn/ui, lucide, next-themes 0.4, react-resizable-panels 4.15 (pinned, see ROADMAP). Fonts through `next/font`: Inter, Instrument Serif, Caveat | |
+| PDF viewer | react-pdf with pdf.js; worker served from our own build | 7.7.3, pdfjs-dist 3.11.174 (pinned together) |
 | PDF text extraction | pdf.js as bundled in `pdf-parse` 1.1 | |
 
 Requires Node 22+ and pnpm 10+. Everything outside the Retrieval, Chat and
@@ -76,7 +76,7 @@ src/components/Aurora.tsx     The moving gradient (hero, Pro card, app page wash
 src/components/Wordmark.tsx   Logo: quill in an ink circle, name in the serif
 src/components/marketing/*    TypedHeadline (typed hero title + ink underline), ProductPreview, Bloom, SiteFooter, shared button classes
 src/components/ui/*           shadcn primitives
-src/lib/pdfjs.ts              pdf.js worker setup; import Document and Page from here
+src/lib/pdfjs.ts              pdf.js worker setup (self-hosted); import Document and Page from here. The viewer is loaded browser-only (`next/dynamic`, `ssr: false`)
 src/config/stripe.ts          PLANS (monthly quota, pagesPerPdf, maxFileSizeMb, price IDs), getPlan()
 src/config/ai.ts              Model names, chunk sizes, how many chunks to retrieve
 src/lib/pdf-loader.ts         PdfPageLoader: PDF to one LangChain Document per page
@@ -243,4 +243,5 @@ from `.env`.
   and an unsafe `origin`.
 - Tests and CI (same day): 43 Vitest tests pass; the CI steps (install,
   type-check, lint, test, build) pass locally with the placeholder
-  environment from the workflow. Not yet run on GitHub.
+  environment from the workflow. First run on GitHub green (owner,
+  2026-11-13, commit `c7f29ee`).

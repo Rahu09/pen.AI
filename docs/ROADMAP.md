@@ -64,10 +64,13 @@ Pinecone removal are in phase 2, because the retrieval code is rewritten there.
 - [ ] Next.js 15 or 16 and React 19 (async request APIs, `params` as promise)
 - [ ] tRPC 10 to 11 and TanStack Query 4 to 5
 - [x] Kinde SDK 1.8 to 2.13: `getUser()` awaited everywhere, `handleAuth()` route, link components from `/components`, `withAuth` middleware. SDK 1.8's token logging is gone
-- [ ] UploadThing 5 to current (the hardcoded S3 host is already gone)
+- [ ] UploadThing 5 to 7. Blocked on the owner: v7 replaces `UPLOADTHING_SECRET` and `UPLOADTHING_APP_ID` with one `UPLOADTHING_TOKEN` from the UploadThing dashboard (API Keys page)
 - [ ] Prisma and Stripe to current; pin a current Stripe API version
-- [ ] react-pdf to current; self-host the pdf.js worker instead of the CDN URL
-- [ ] `react-resizable-panels` 2 to 4 (API renamed) and the now-unused `react-loading-skeleton` removed
+- [x] pdf.js worker served from our own build instead of the cdnjs URL; `react-pdf` 7.7.3 and `pdfjs-dist` 3.11.174 pinned exactly (they must match)
+- [x] PDF viewer and fullscreen view were blank on Next 14 (`react-resize-detector` reported no width); now measured with Mantine's `useElementSize`, and `react-resize-detector` removed
+- [ ] react-pdf 10 or 11: do with the Next 15/16 step. pdf.js 4+ ships `.mjs` that Next 14's webpack cannot load ("Object.defineProperty called on non-object"), and react-pdf 11 needs React 19
+- [x] `react-resizable-panels` 2 to 4.15.3 (`Group` / `Panel` / `Separator`, `useDefaultLayout`). Pinned exactly: 4.16+ imports React 19's `Activity` and breaks the production build on React 18. Unpin with React 19
+- [x] Unused `react-loading-skeleton`, `react-element-to-jsx-string` and `@tabler/icons-react` removed
 - [ ] Tailwind 3 to 4 (optional, do last)
 
 ## Phase 4: Dashboard UI upgrade
@@ -150,7 +153,7 @@ Not yet checked:
 
 - [x] Test runner and tests for the tRPC router, the Stripe webhook and plan-limit logic (Vitest, 43 tests, D-018)
 - [x] GitHub Actions: install, type-check, lint, test, build (`.github/workflows/ci.yml`)
-- [ ] Owner: after the first push, check the CI run is green on GitHub (it has only been run locally)
+- [x] First CI run on GitHub is green (run #1, commit `c7f29ee`, 1m 30s, 43 tests)
 - [ ] Tests not written yet: the chat route (`api/message`), `getUserSubscriptionPlan`, the vector store SQL (needs a real Postgres with pgvector, e.g. a service container in CI), React components
 - [x] Error boundaries and `not-found` / `error` pages: site 404, dashboard 404 (unknown or someone else's file), dashboard and root error boundaries, `global-error`
 - [x] Fix the lint warnings (lint is clean as of 2026-11-13)

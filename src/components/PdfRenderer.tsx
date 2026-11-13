@@ -9,7 +9,7 @@ import {
 } from "lucide-react";
 import { Document, Page } from "@/lib/pdfjs";
 import { useToast } from "./ui/use-toast";
-import { useResizeDetector } from "react-resize-detector";
+import { useDebouncedValue, useElementSize } from "@mantine/hooks";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
@@ -62,13 +62,13 @@ const PdfRenderer = ({ url }: PDFRendererProps) => {
     resolver: zodResolver(CustomPageValidator),
   });
 
-  // Debounced: while the divider next to the PDF is dragged the width changes
-  // on every frame, and each change re-renders the page canvas.
-  const { width, ref } = useResizeDetector({
-    handleHeight: false,
-    refreshMode: "debounce",
-    refreshRate: 150,
-  });
+  // The page is drawn at the width of its container. Measured with a
+  // ResizeObserver (Mantine), then debounced: while the divider next to the
+  // PDF is dragged the width changes on every frame, and each change redraws
+  // the page canvas. react-resize-detector did this before but stopped
+  // reporting widths on Next 14, which left the page blank.
+  const { ref, width: liveWidth } = useElementSize();
+  const [width] = useDebouncedValue(liveWidth, 150);
 
   const handlePageSubmit = ({ page }: TCustomPageValidator) => {
     setCurrPage(Number(page));
