@@ -1,0 +1,68 @@
+name: CI
+
+# Runs on every push to main and on every pull request. Each step must pass
+# for the next one to run; a red step names what broke.
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+# A newer push to the same branch cancels the run that is still going.
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    # `next build` reads these at build time but does not call the services.
+    # They are placeholders, not secrets: the tests mock every service, and
+    # no real key is needed (or wanted) in CI for a public repo.
+    env:
+      DATABASE_URL: postgresql://ci:ci@localhost:5432/ci
+      DIRECT_URL: postgresql://ci:ci@localhost:5432/ci
+      KINDE_CLIENT_ID: ci
+      KINDE_CLIENT_SECRET: ci
+      KINDE_ISSUER_URL: https://ci.kinde.com
+      KINDE_SITE_URL: http://localhost:3000
+      KINDE_POST_LOGOUT_REDIRECT_URL: http://localhost:3000
+      KINDE_POST_LOGIN_REDIRECT_URL: http://localhost:3000/dashboard
+      UPLOADTHING_SECRET: sk_live_ci
+      UPLOADTHING_APP_ID: ci
+      GOOGLE_API_KEY: ci
+      STRIPE_SECRET_KEY: sk_test_ci
+      STRIPE_WEBHOOK_SECRET: whsec_ci
+      NEXT_TELEMETRY_DISABLED: 1
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+
+      # Also runs `prisma generate` (postinstall), which needs no database.
+      - name: Install
+        run: pnpm install --frozen-lockfile
+
+      - name: Type-check
+        run: pnpm exec tsc --noEmit
+
+      - name: Lint
+        run: pnpm lint
+
+      - name: Test
+        run: pnpm test
+
+      - name: Build
+        run: pnpm build

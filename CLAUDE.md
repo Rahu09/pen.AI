@@ -41,10 +41,14 @@ pnpm dev              # http://localhost:3000
 pnpm build
 pnpm lint
 pnpm exec tsc --noEmit
+pnpm test             # Vitest, once; `pnpm test:watch` to rerun on save
 pnpm exec prisma migrate deploy   # apply migrations (needs DIRECT_URL)
 ```
 
-There are no tests yet (see ROADMAP phase 6).
+Tests sit next to the code as `*.test.ts` and mock every outside service
+(Prisma, Kinde, Stripe, UploadThing), so they need no keys or database.
+CI (`.github/workflows/ci.yml`) runs install, type-check, lint, test and
+build on every push to `main` and every pull request.
 
 ## Conventions
 

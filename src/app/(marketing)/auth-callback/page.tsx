@@ -4,16 +4,7 @@ import { Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { trpc } from "@/app/_trpc/client";
 import { Loader2 } from "lucide-react";
-
-// `origin` comes from the URL, so anyone can put anything in it. Only accept a
-// plain in-app path such as "dashboard" or "dashboard/abc123". Anything else
-// (a full URL, "//evil.com", backslashes) falls back to the dashboard, so the
-// page cannot be used to send a signed-in user to another site.
-const SAFE_ORIGIN = /^[a-zA-Z0-9_-]+(\/[a-zA-Z0-9_-]+)*$/;
-
-function destination(origin: string | null) {
-  return origin && SAFE_ORIGIN.test(origin) ? `/${origin}` : "/dashboard";
-}
+import { afterSignInPath } from "@/lib/safe-redirect";
 
 function AuthCallback() {
   const router = useRouter();
@@ -22,7 +13,7 @@ function AuthCallback() {
   trpc.authCallback.useQuery(undefined, {
     onSuccess: ({ success }) => {
       // user is synced to db
-      if (success) router.push(destination(origin));
+      if (success) router.push(afterSignInPath(origin));
     },
     onError: (err) => {
       if (err.data?.code === "UNAUTHORIZED") router.push("/sign-in");

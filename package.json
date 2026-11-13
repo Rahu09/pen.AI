@@ -10,6 +10,8 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
+    "test": "vitest run",
+    "test:watch": "vitest",
     "postinstall": "prisma generate"
   },
   "dependencies": {
@@ -71,7 +73,8 @@
   },
   "devDependencies": {
     "eslint-config-next": "14.2.35",
-    "prisma": "^5.11.0"
+    "prisma": "^5.11.0",
+    "vitest": "^5.1.0"
   },
   "pnpm": {
     "onlyBuiltDependencies": [

@@ -11,7 +11,8 @@ import { getPlan, startOfQuotaPeriod } from "@/config/stripe";
 
 const f = createUploadthing();
 
-const middleware = async () => {
+// Exported for the tests in core.test.ts.
+export const middleware = async () => {
   const { getUser } = getKindeServerSession();
   const user = await getUser();
 

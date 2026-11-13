@@ -369,6 +369,34 @@ Entry format:
 - Consequences: Two Next upgrades instead of one, but each is small enough
   to check in the browser.
 
+## D-018: Vitest with mocked services; CI on GitHub Actions
+
+- Date: 2026-11-13
+- Status: Accepted (owner asked for tests and CI; the tools and the
+  approach were chosen by Claude).
+- Context: ROADMAP phase 6. No tests or CI existed. The riskiest code is
+  the server side: per-user scoping in the tRPC router, the Stripe webhook
+  (which had a renewal bug fixed the same day), quota enforcement and the
+  sign-in redirect check.
+- Decision: Vitest 5 for unit tests, files next to the code as
+  `*.test.ts`. Prisma, Kinde, Stripe and UploadThing are replaced with
+  mocks (`vi.mock`), so tests need no keys, database or network. The tRPC
+  router is tested through `appRouter.createCaller`. GitHub Actions runs
+  install, type-check, lint, test and build on pushes to `main` and on pull
+  requests, with placeholder (non-secret) environment values for the build.
+- Alternatives:
+  - Jest: needs extra setup for TypeScript and ESM; Vitest runs the
+    project's TypeScript directly and has the same API.
+  - Tests against a real Postgres: would also cover the raw pgvector SQL,
+    but needs a database in CI (a service container). Left for later.
+  - Real secrets in CI: not needed for build or tests, and the repo is
+    public.
+- Consequences:
+  - Mocked tests check the code's decisions (what it queries, what it
+    refuses), not that Prisma or Stripe behave as assumed.
+  - `core.ts` exports its upload middleware, and the redirect check moved
+    to `src/lib/safe-redirect.ts`, so both can be tested.
+
 ---
 
 # Open decisions

@@ -15,6 +15,29 @@ Entry format:
 
 ---
 
+## 2026-11-13: Tests and CI (same chat as below)
+
+- Asked: add tests and CI (ROADMAP phase 6).
+- Done (D-018):
+  - Vitest 5 (`pnpm test`, `pnpm test:watch`), config in
+    `vitest.config.mts`.
+  - 43 tests in 5 files: plans and quota period
+    (`src/config/stripe.test.ts`), the sign-in redirect check
+    (`src/lib/safe-redirect.test.ts`, logic moved out of the page), the
+    Stripe webhook including the renewal case, the tRPC router (signed-out
+    refusal, per-user scoping, rename, delete, message paging), and the
+    upload quota middleware.
+  - `.github/workflows/ci.yml`: install, type-check, lint, test, build on
+    Node 22 and pnpm 10, placeholder env values.
+- Verified: all 43 pass. A deliberate break (ownership filter removed from
+  `deleteFile`) made a test fail; restored. Every CI step run locally with
+  the workflow's placeholder env: install (frozen lockfile), type-check,
+  lint, test and build all pass.
+- Not verified: the workflow on GitHub (runs after the owner pushes).
+- Next: owner pushes and checks the CI run. Then the remaining upgrades
+  (UploadThing, react-pdf, react-resizable-panels, Prisma and Stripe,
+  tRPC 11 and React Query 5, Next 15/16), each checked by the suite.
+
 ## 2026-11-13: Error and not-found pages (same chat as below)
 
 - Asked: add the error pages (ROADMAP phase 6).

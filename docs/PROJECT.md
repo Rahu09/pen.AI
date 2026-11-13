@@ -82,7 +82,11 @@ src/config/ai.ts              Model names, chunk sizes, how many chunks to retri
 src/lib/pdf-loader.ts         PdfPageLoader: PDF to one LangChain Document per page
 src/lib/embeddings.ts         GeminiEmbeddings: text to vectors, separate modes for documents and questions
 src/lib/vector-store.ts       DocumentChunkVectorStore: LangChain vector store on pgvector
+src/lib/safe-redirect.ts      afterSignInPath(): which `origin` the auth callback may follow
 src/lib/                      stripe, uploadthing, utils
+src/**/*.test.ts              Vitest unit tests, next to the code they test
+vitest.config.mts             Test config (`@/` alias, Node environment)
+.github/workflows/ci.yml      CI: install, type-check, lint, test, build
 ```
 
 ## Flows
@@ -237,4 +241,6 @@ from `.env`.
   (`/auth-callback` wrapped in Suspense; `themeColor` moved to the
   `viewport` export). `/auth-callback` checked in the browser with a safe
   and an unsafe `origin`.
-- Tests: none. CI: none.
+- Tests and CI (same day): 43 Vitest tests pass; the CI steps (install,
+  type-check, lint, test, build) pass locally with the placeholder
+  environment from the workflow. Not yet run on GitHub.

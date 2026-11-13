@@ -148,8 +148,10 @@ Not yet checked:
 
 ## Phase 6: Quality
 
-- [ ] Test runner and tests for the tRPC router, the Stripe webhook and plan-limit logic
-- [ ] GitHub Actions: install, type-check, lint, test, build
+- [x] Test runner and tests for the tRPC router, the Stripe webhook and plan-limit logic (Vitest, 43 tests, D-018)
+- [x] GitHub Actions: install, type-check, lint, test, build (`.github/workflows/ci.yml`)
+- [ ] Owner: after the first push, check the CI run is green on GitHub (it has only been run locally)
+- [ ] Tests not written yet: the chat route (`api/message`), `getUserSubscriptionPlan`, the vector store SQL (needs a real Postgres with pgvector, e.g. a service container in CI), React components
 - [x] Error boundaries and `not-found` / `error` pages: site 404, dashboard 404 (unknown or someone else's file), dashboard and root error boundaries, `global-error`
 - [x] Fix the lint warnings (lint is clean as of 2026-11-13)
 - [ ] Dev server logs "Invalid hook call ... reading 'useMemo'" once when `/auth-callback` first renders; the page still works. Recheck after the Next.js upgrade
