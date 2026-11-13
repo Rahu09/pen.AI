@@ -15,6 +15,35 @@ Entry format:
 
 ---
 
+## 2026-11-14: Page citations, failure reasons, policy pages
+
+- Asked: fix the "[Page 1]" answers (or make citations), say why an upload
+  failed, write the four `/payment/*` pages (D-023).
+- Done:
+  - Citations: prompt asks for "[p. N]"; `src/lib/citations.ts` turns them
+    into links; `Message.tsx` renders them as buttons; the PDF page is
+    owned by `FileWorkspace` and shared through
+    `src/components/file/pdf-navigation.tsx`; `PdfRenderer` takes `page`
+    and `onPageChange` and keeps the page in range.
+  - Failure reasons: `UploadFailure` enum, `File.failureReason` and
+    `File.pageCount`, migration `20261114000000_upload_failure_reason`
+    (applied to Neon; matches `prisma migrate diff`).
+    `src/lib/upload-check.ts` holds the check and the messages; ingest
+    stores the reason; `getFileUploadStatus` returns it; chat panel and
+    file badge show it.
+  - Policy pages: `PolicyPage` layout, terms, privacy, cancellation and
+    refunds, support; footer links; `src/config/site.ts`;
+    `NEXT_PUBLIC_SUPPORT_EMAIL` (optional) in `.env.example`.
+  - 14 new tests (citations, upload check); 58 in total.
+- Verified: type-check, lint, tests, build. In the browser: citations
+  "p. 1" and "p. 2" and the jump to page 2; the too-many-pages and no-text
+  messages and badges; policy pages in dark mode and at 375px. Test files
+  deleted afterwards.
+- Found: processing a 3-page PDF once took about a minute with no error
+  logged (likely Gemini free-tier rate limiting or a cold start).
+- Open: owner review of the policy text and refund rule (O-10).
+- Next: commit; then the prod setup steps.
+
 ## 2026-11-14: Next 16 and React 19
 
 - Asked: upgrade to Next 16 and React 19 (D-022).

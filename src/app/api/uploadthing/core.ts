@@ -8,6 +8,8 @@ import { getVectorStore } from "@/lib/vector-store";
 import { CHUNK_OVERLAP, CHUNK_SIZE } from "@/config/ai";
 import { getUserSubscriptionPlan } from "@/lib/stripe";
 import { getPlan, startOfQuotaPeriod } from "@/config/stripe";
+import { checkPdf } from "@/lib/upload-check";
+import type { UploadFailure } from "@/generated/prisma/client";
 
 const f = createUploadthing();
 
@@ -65,9 +67,9 @@ const onUploadComplete = async ({
       uploadStatus: "PROCESSING",
     },
   });
-  const markFile = (uploadStatus: "FAILED" | "SUCCESS") =>
+  const markFailed = (failureReason: UploadFailure, pageCount?: number) =>
     db.file.update({
-      data: { uploadStatus },
+      data: { uploadStatus: "FAILED", failureReason, pageCount },
       where: { id: createdFile.id },
     });
 
@@ -88,12 +90,17 @@ const onUploadComplete = async ({
     const { isSubscribed } = metadata.subscriptionPlan;
     const plan = getPlan(isSubscribed);
 
-    const isOverPageLimit = loader.totalPages > plan.pagesPerPdf;
-    // A scanned PDF has no text layer, so there is nothing to search.
-    const hasNoText = pageDocs.length === 0;
+    // The loader returns only pages that have text, so a scanned PDF (no
+    // text layer) gives none and there is nothing to search. The reason is
+    // stored so the app can say what went wrong.
+    const failure = checkPdf({
+      totalPages: loader.totalPages,
+      pagesWithText: pageDocs.length,
+      pagesPerPdf: plan.pagesPerPdf,
+    });
 
-    if (isOverPageLimit || hasNoText) {
-      await markFile("FAILED");
+    if (failure) {
+      await markFailed(failure, loader.totalPages);
       return;
     }
 
@@ -111,10 +118,13 @@ const onUploadComplete = async ({
     //    text in Postgres (see src/lib/vector-store.ts).
     await getVectorStore(createdFile.id).addDocuments(chunks);
 
-    await markFile("SUCCESS");
+    await db.file.update({
+      data: { uploadStatus: "SUCCESS", pageCount: loader.totalPages },
+      where: { id: createdFile.id },
+    });
   } catch (err) {
     console.error("PDF processing failed", err);
-    await markFile("FAILED");
+    await markFailed("PROCESSING_ERROR");
   }
 };
 

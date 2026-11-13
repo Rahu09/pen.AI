@@ -9,10 +9,18 @@ import type { UserFile } from "./types";
  * Both badges have a border and their own background so they stay readable on
  * top of a thumbnail as well as in a list row, in either theme.
  */
+const FAILURE_LABELS: Record<NonNullable<UserFile["failureReason"]>, string> = {
+  TOO_MANY_PAGES: "Too many pages",
+  NO_TEXT: "No text found",
+  PROCESSING_ERROR: "Couldn't be read",
+};
+
 export function FileStatusBadge({
   status,
+  failureReason = null,
 }: {
   status: UserFile["uploadStatus"];
+  failureReason?: UserFile["failureReason"];
 }) {
   if (status === "SUCCESS") return null;
 
@@ -21,10 +29,10 @@ export function FileStatusBadge({
       <Badge
         variant="destructive"
         className="border-destructive-foreground/25"
-        title="This PDF could not be processed"
+        title="This PDF could not be processed. Open it to see why."
       >
         <AlertCircle className="h-3 w-3" aria-hidden="true" />
-        Failed
+        {failureReason ? FAILURE_LABELS[failureReason] : "Failed"}
       </Badge>
     );
   }

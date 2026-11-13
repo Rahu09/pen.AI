@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { Wordmark } from "@/components/Wordmark";
-
-const REPO_URL = "https://github.com/Rahu09/pen.AI";
+import { REPO_URL } from "@/config/site";
+import { POLICY_PAGES } from "./PolicyPage";
 
 export function SiteFooter() {
   return (
@@ -13,7 +13,10 @@ export function SiteFooter() {
             chat with your PDFs
           </span>
         </div>
-        <nav aria-label="Footer" className="flex items-center gap-6">
+        <nav
+          aria-label="Footer"
+          className="flex flex-wrap items-center gap-x-6 gap-y-2"
+        >
           <Link href="/pricing" className="hover:text-foreground">
             Pricing
           </Link>
@@ -25,6 +28,11 @@ export function SiteFooter() {
           >
             Source on GitHub
           </a>
+          {POLICY_PAGES.map((page) => (
+            <Link key={page.href} href={page.href} className="hover:text-foreground">
+              {page.label}
+            </Link>
+          ))}
         </nav>
       </div>
     </footer>

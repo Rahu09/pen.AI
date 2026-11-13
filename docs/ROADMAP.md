@@ -124,7 +124,7 @@ Not yet checked:
 - [~] Upload from the button works (UploadThing 7, 2026-11-13); drag and drop and the quota message not yet checked
 - [x] Deleting a file (also removes it from UploadThing; checked through `UTApi.listFiles`)
 - [x] Asking a question: messages in the restyled chat
-- [ ] Answers can start with the literal page label ("[Page 1]") copied from the prompt context. Adjust the prompt in `src/app/api/message/route.ts` (or turn it into the "cite the page" feature)
+- [x] Answers started with a copied "[Page 1]" label. Now the prompt asks for "[p. N]" citations after each sentence, and they render as buttons that open that page (D-023)
 - [x] UploadThing storage cleaned (2026-11-13, owner approved): 23 files with no database row deleted (2024 uploads from the old deployment, failed uploads, an earlier duplicate). 1 file left, the one in use
 - [x] Owner's review of the flat design: they preferred the original look (D-015)
 - [x] Original colours and motion brought back as "ink on aurora" (D-015): landing, navbar, footer, pricing, app shell, Files, billing, chat bubbles
@@ -135,14 +135,15 @@ Not yet checked:
 - [x] Link preview image is generated from code (`src/app/opengraph-image.tsx`, `twitter-image.tsx`) in the current design; `public/thumbnail.png` deleted
 - [x] Pro price is INR 199 a month in `PLANS` and on the pricing page (D-022)
 - [ ] Owner: create an INR 199 monthly price in Stripe and give Claude its id (or put it in `src/config/stripe.ts`). Until then checkout still charges the old INR 1,999
-- [ ] The four `/payment/*` pages are empty stubs
+- [x] The four `/payment/*` pages written (terms, privacy, cancellation and refunds, support), linked from the footer (D-023)
+- [ ] Owner: review the policy text, in particular the refund rule (O-10); optionally set `NEXT_PUBLIC_SUPPORT_EMAIL` locally and on Vercel
 
 ## Phase 5: Correctness
 
 - [x] `ChatWrapper.tsx`: "Back" on a failed upload was an icon, not a link (wrong `Link` import)
 - [x] Chat history took the oldest 6 messages; now the latest 6, read before the new question is saved
 - [x] Over-limit PDFs were still embedded; the page limit is now checked first
-- [~] A failed upload showed "Too many pages" whatever the cause. The text is now neutral ("couldn't be processed"), but the real reason is still not stored or shown
+- [x] A failed upload now stores why (`failureReason`, `pageCount`) and says so in the chat panel and on the file badge, offering Pro when it would help (D-023)
 - [x] Dashboard sorted the query cache array in place (replaced in phase 4)
 - [x] Dashboard message count was the literal text "mocked" (replaced in phase 4)
 - [x] `MobileNav.tsx` had dead links and an invisible icon (deleted; the navbar now fits on a phone)
@@ -176,5 +177,4 @@ Not yet checked:
 
 ## Later ideas (not committed to)
 
-- Answers that cite the PDF page they came from, with click-to-jump
 - Multiple chats per file; chat across several files

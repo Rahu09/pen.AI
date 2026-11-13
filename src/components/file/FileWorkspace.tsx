@@ -10,6 +10,7 @@ import ChatWrapper from "@/components/chat/ChatWrapper";
 import dynamic from "next/dynamic";
 import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
+import { PdfNavigationContext } from "./pdf-navigation";
 
 // A PDF canvas has nothing to show before the browser runs, so the viewer
 // (and pdf.js with it) is loaded in the browser only, as the thumbnails are.
@@ -62,6 +63,15 @@ export default function FileWorkspace({ file }: { file: WorkspaceFile }) {
 
   const [tab, setTab] = useState<Tab>("pdf");
 
+  // The PDF's current page lives here, not in the viewer, so the chat can
+  // change it: clicking a page citation in an answer jumps there. On narrow
+  // screens the PDF is on its own tab, so the jump also switches to it.
+  const [page, setPage] = useState(1);
+  const showPage = (target: number) => {
+    setPage(target);
+    if (!isWide) setTab("pdf");
+  };
+
   // Remembers where the user left the divider (localStorage, per browser).
   // Only drags count, not window resizes.
   const split = useDefaultLayout({
@@ -72,6 +82,7 @@ export default function FileWorkspace({ file }: { file: WorkspaceFile }) {
   });
 
   return (
+    <PdfNavigationContext.Provider value={showPage}>
     <div className="flex h-full flex-col">
       <header className="flex h-14 shrink-0 items-center gap-2 border-b px-3">
         <Link
@@ -122,7 +133,7 @@ export default function FileWorkspace({ file }: { file: WorkspaceFile }) {
           className="min-h-0 flex-1"
         >
           <Panel id="pdf" defaultSize="58%" minSize="30%">
-            <PdfRenderer url={file.url} />
+            <PdfRenderer url={file.url} page={page} onPageChange={setPage} />
           </Panel>
           <Separator
             aria-label="Resize PDF and chat"
@@ -142,7 +153,7 @@ export default function FileWorkspace({ file }: { file: WorkspaceFile }) {
             aria-label="PDF"
             className={cn("h-full", tab !== "pdf" && "hidden")}
           >
-            <PdfRenderer url={file.url} />
+            <PdfRenderer url={file.url} page={page} onPageChange={setPage} />
           </div>
           <div
             role="tabpanel"
@@ -154,5 +165,6 @@ export default function FileWorkspace({ file }: { file: WorkspaceFile }) {
         </div>
       )}
     </div>
+    </PdfNavigationContext.Provider>
   );
 }

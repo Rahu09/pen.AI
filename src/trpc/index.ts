@@ -191,8 +191,13 @@ export const appRouter = router({
           userId: ctx.userId,
         },
       });
-      if (!file) return { status: "PENDING" as const };
-      return { status: file.uploadStatus };
+      if (!file)
+        return { status: "PENDING" as const, failureReason: null, pageCount: null };
+      return {
+        status: file.uploadStatus,
+        failureReason: file.failureReason,
+        pageCount: file.pageCount,
+      };
     }),
 
   getFile: privateProcedure

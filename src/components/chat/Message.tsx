@@ -3,7 +3,9 @@ import { ExtendedMessage } from "@/types/message";
 import { Icons } from "../Icons";
 import ReactMarkdown from "react-markdown";
 import { format } from "date-fns";
-import { forwardRef } from "react";
+import { forwardRef, type ComponentProps } from "react";
+import { linkCitations, pageFromHref } from "@/lib/citations";
+import { usePdfNavigation } from "@/components/file/pdf-navigation";
 
 interface MessageProps {
   message: ExtendedMessage;
@@ -63,7 +65,15 @@ const Message = forwardRef<HTMLDivElement, MessageProps>(
                   "dark:prose-invert": !message.isUserMessage,
                 })}
               >
-                <ReactMarkdown>{message.text}</ReactMarkdown>
+                {message.isUserMessage ? (
+                  <ReactMarkdown>{message.text}</ReactMarkdown>
+                ) : (
+                  // Answers cite pages as "[p. 3]"; those become links
+                  // here and render as buttons that open that page.
+                  <ReactMarkdown components={{ a: AnswerLink }}>
+                    {linkCitations(message.text)}
+                  </ReactMarkdown>
+                )}
               </div>
             ) : (
               message.text
@@ -86,5 +96,44 @@ const Message = forwardRef<HTMLDivElement, MessageProps>(
 );
 
 Message.displayName = "Message";
+
+/**
+ * Links inside an answer. A page citation ("#page-3", see lib/citations)
+ * becomes a small button that moves the PDF viewer to that page; any other
+ * link opens in a new tab.
+ */
+function AnswerLink({ href, children }: ComponentProps<"a">) {
+  const goToPage = usePdfNavigation();
+  const page = pageFromHref(href);
+
+  if (page === null) {
+    return (
+      <a href={href} target="_blank" rel="noreferrer">
+        {children}
+      </a>
+    );
+  }
+
+  const label = (
+    <span className="not-prose inline-flex items-center rounded border border-foreground/15 bg-background/60 px-1.5 py-px align-baseline text-xs font-medium tabular-nums">
+      p. {page}
+    </span>
+  );
+
+  // Outside a file page there is no viewer to move.
+  if (!goToPage) return label;
+
+  return (
+    <button
+      type="button"
+      onClick={() => goToPage(page)}
+      title={`Show page ${page} of the PDF`}
+      aria-label={`Show page ${page} of the PDF`}
+      className="rounded outline-none transition-colors hover:text-primary focus-visible:ring-2 focus-visible:ring-ring [&>span]:hover:border-primary/50"
+    >
+      {label}
+    </button>
+  );
+}
 
 export default Message;

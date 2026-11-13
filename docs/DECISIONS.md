@@ -508,6 +508,40 @@ Entry format:
 - Consequences: Route `params`, `headers()` and `cookies()` are promises.
   `pdfjs-dist` must move together with react-pdf.
 
+## D-023: Page citations, stored failure reasons, policy pages
+
+- Date: 2026-11-14
+- Status: Accepted (owner asked for all three; the approach and the policy
+  wording are Claude's, see O-10).
+- Context: Answers started with a "[Page 1]" label copied from the prompt;
+  failed uploads gave one vague message; the `/payment/*` pages were stubs.
+- Decision:
+  - Citations: the prompt asks the model to cite "[p. N]" after each
+    sentence. The browser turns citations into buttons when it renders an
+    answer (`src/lib/citations.ts`); stored answers stay plain text. The
+    PDF page moved from the viewer into `FileWorkspace`, so the chat can
+    set it through a small context.
+  - Failure reasons: an `UploadFailure` enum and nullable `failureReason`
+    and `pageCount` columns on `File` (migration applied to Neon). The
+    check and the wording are pure functions in `src/lib/upload-check.ts`.
+  - Policy pages: plain-language terms, privacy, cancellation and support,
+    written from what the code does (every service named is one the app
+    sends data to, including Google's free-tier use of content). Contact is
+    GitHub issues plus an optional `NEXT_PUBLIC_SUPPORT_EMAIL`, so no
+    personal address is committed.
+- Alternatives:
+  - Only fix the prompt so answers stop starting with "[Page 1]": smaller,
+    but citations are the stronger demo and make answers checkable.
+  - Rewrite citations when the answer is saved: older answers would not
+    get them, and the stored text would depend on the UI.
+  - A free-text failure message column: an enum keeps the wording in the
+    UI and lets it change without touching data.
+  - Generated legal boilerplate: long, and would promise things the app
+    does not do.
+- Consequences: the model can still miscite; the viewer keeps the page in
+  range, but a wrong page number is possible. Policy text must be updated
+  when a service, a limit or the refund rule changes.
+
 ---
 
 # Open decisions
@@ -516,6 +550,7 @@ Not yet decided by the owner. Recommendations are Claude's and are not binding.
 
 | # | Question | Options | Recommendation |
 |---|---|---|---|
+| O-10 | Refund rule on /payment/cancellation: no refund for the rest of a month after cancelling; mistaken, duplicate or after-cancel charges reviewed if reported within 30 days. Keep? | Keep; or name the rule you want | Keep (common for monthly plans) |
 | O-7 | Confirm D-012 (own vector store and PDF loader on LangChain core)? | Keep it; or switch to the official `@langchain/pgvector` store | Keep it |
 
 Resolved: O-9 became D-021. O-8 became D-015. O-1 became D-004, O-2 became D-005, O-3 became D-006, O-4 became

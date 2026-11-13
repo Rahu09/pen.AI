@@ -8,6 +8,9 @@ import { trpc } from "@/app/_trpc/client";
 import { ChevronLeft, Loader2, XCircle } from "lucide-react";
 import { buttonVariants } from "../ui/button";
 import { ChatContextProvider } from "./ChatContext";
+import { usePlan } from "@/components/app-shell/plan-context";
+import { getPlan } from "@/config/stripe";
+import { describeFailure } from "@/lib/upload-check";
 
 interface chatWrapperProps {
   fileId: string;
@@ -42,6 +45,7 @@ const ChatStatus = ({
 );
 
 const ChatWrapper = ({ fileId }: chatWrapperProps) => {
+  const plan = usePlan();
   const { data, isLoading } = trpc.getFileUploadStatus.useQuery(
     {
       fileId,
@@ -73,26 +77,38 @@ const ChatWrapper = ({ fileId }: chatWrapperProps) => {
       />
     );
 
-  if (data?.status === "FAILED")
+  if (data?.status === "FAILED") {
+    const failure = describeFailure(data.failureReason, {
+      pageCount: data.pageCount,
+      pagesPerPdf: plan.pagesPerPdf,
+      proPagesPerPdf: getPlan(true).pagesPerPdf,
+      isSubscribed: plan.isSubscribed,
+    });
+
     return (
       <ChatStatus
         icon={<XCircle className="h-8 w-8 text-red-500" />}
-        title="This PDF couldn't be processed"
-        description="It may have more pages than your plan allows, or contain no selectable text."
+        title={failure.title}
+        description={failure.description}
         action={
-          <Link
-            href="/dashboard"
-            className={buttonVariants({
-              variant: "secondary",
-              className: "mt-4",
-            })}
-          >
-            <ChevronLeft className="mr-1.5 h-3 w-3" />
-            Back to files
-          </Link>
+          <div className="mt-4 flex flex-wrap justify-center gap-2">
+            <Link
+              href="/dashboard"
+              className={buttonVariants({ variant: "secondary" })}
+            >
+              <ChevronLeft className="mr-1.5 h-3 w-3" />
+              Back to files
+            </Link>
+            {failure.upgradeHelps ? (
+              <Link href="/pricing" className={buttonVariants()}>
+                See Pro
+              </Link>
+            ) : null}
+          </div>
         }
       />
     );
+  }
 
   return (
     <ChatContextProvider fileId={fileId}>

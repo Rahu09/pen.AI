@@ -10,7 +10,7 @@ import {
 import { Document, Page } from "@/lib/pdfjs";
 import { useToast } from "./ui/use-toast";
 import { useDebouncedValue, useElementSize } from "@mantine/hooks";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -29,14 +29,19 @@ import "react-pdf/dist/Page/TextLayer.css";
 
 interface PDFRendererProps {
   url: string;
+  /** The page to show. Owned by the file page so chat citations can set it. */
+  page: number;
+  onPageChange: (page: number) => void;
 }
 
 const ZOOM_LEVELS = [1, 1.5, 2, 2.5];
 
-const PdfRenderer = ({ url }: PDFRendererProps) => {
+const PdfRenderer = ({ url, page, onPageChange }: PDFRendererProps) => {
   const { toast } = useToast();
   const [numPages, setNumPages] = useState<number>();
-  const [currPage, setCurrPage] = useState<number>(1);
+  // A citation can name a page the PDF does not have (the model is not
+  // perfect), so the requested page is kept inside the document.
+  const currPage = numPages ? Math.min(Math.max(page, 1), numPages) : page;
   const [scale, setScale] = useState<number>(1);
   const [rotation, setRotation] = useState<number>(0);
   const [renderedScale, setRenderedScale] = useState<number | null>(null);
@@ -70,14 +75,19 @@ const PdfRenderer = ({ url }: PDFRendererProps) => {
   const { ref, width: liveWidth } = useElementSize();
   const [width] = useDebouncedValue(liveWidth, 150);
 
+  // Keep the page box in step with the page shown, whichever way it changed
+  // (arrows, typing, or a citation in the chat). setValue writes to the
+  // form library, not to React state.
+  useEffect(() => {
+    setValue("page", String(currPage));
+  }, [currPage, setValue]);
+
   const handlePageSubmit = ({ page }: TCustomPageValidator) => {
-    setCurrPage(Number(page));
-    setValue("page", String(page));
+    onPageChange(Number(page));
   };
 
   const goToPage = (page: number) => {
-    setCurrPage(page);
-    setValue("page", String(page));
+    onPageChange(page);
   };
 
   return (

@@ -43,7 +43,7 @@ prisma/schema.prisma          User, File, Message, DocumentChunk, UploadStatus
 prisma.config.ts              Prisma CLI config (Prisma 7): schema path, migrations, DIRECT_URL for migrate
 src/generated/prisma/         Generated Prisma client (git-ignored; `prisma generate`, runs on install)
 src/db/index.ts               PrismaClient with the pg adapter on DATABASE_URL; import `db` from here
-prisma/migrations/            SQL migrations (the second one enables pgvector)
+prisma/migrations/            SQL migrations (the second enables pgvector; the third adds the upload failure reason)
 src/proxy.ts                  (Next 16's name for middleware) Kinde `withAuth` on /dashboard/*: signed-out visitors go to sign-in and come back to the page
 src/app/
   layout.tsx                  Root: fonts, providers (theme, tRPC), toaster, viewport theme colour
@@ -53,7 +53,7 @@ src/app/
     page.tsx                  Landing page (hero, how it works, plans, under the hood)
     pricing/page.tsx          Pricing table (limits partly hardcoded here)
     auth-callback/page.tsx    Syncs the Kinde user into the DB, then redirects
-    payment/*                 Static policy pages
+    payment/*                 Policy pages: terms, privacy, cancellation and refunds, support (PolicyPage layout)
   dashboard/layout.tsx        Signed-in shell: loads user and plan, renders AppShell
   dashboard/page.tsx          Files page: auth check, renders Dashboard
   dashboard/[fileid]/page.tsx One file: ownership check, renders FileWorkspace
@@ -75,11 +75,15 @@ src/components/Navbar.tsx, UserAccountNav.tsx   Marketing navbar only
 src/components/StatusPage.tsx Shared layout for 404 and error screens
 src/components/Aurora.tsx     The moving gradient (hero, Pro card, app page wash)
 src/components/Wordmark.tsx   Logo: quill in an ink circle, name in the serif
-src/components/marketing/*    TypedHeadline (typed hero title + ink underline), ProductPreview, Bloom, SiteFooter, shared button classes
+src/components/marketing/*    TypedHeadline (typed hero title + ink underline), ProductPreview, Bloom, SiteFooter, PolicyPage, ContactLine, shared button classes
 src/components/ui/*           shadcn primitives
 src/lib/pdfjs.ts              pdf.js worker setup (self-hosted); import Document and Page from here. The viewer is loaded browser-only (`next/dynamic`, `ssr: false`)
 src/config/stripe.ts          PLANS (monthly quota, pagesPerPdf, maxFileSizeMb, retrievalTopK, historyMessages, price and currency, price IDs), getPlan(), formatPrice()
 src/config/ai.ts              Model names and chunk sizes
+src/config/site.ts            Site name, URLs, optional support email (policy pages)
+src/lib/citations.ts          "[p. N]" page citations in answers to links (rendered as buttons)
+src/lib/upload-check.ts       Why a PDF is refused (page limit, no text) and the message shown for it
+src/components/file/pdf-navigation.tsx   Context that lets chat citations move the PDF viewer
 src/app/opengraph-image.tsx, twitter-image.tsx   Link preview image, drawn in code (edge runtime)
 src/lib/pdf-loader.ts         PdfPageLoader: PDF to one LangChain Document per page
 src/lib/embeddings.ts         GeminiEmbeddings: text to vectors, separate modes for documents and questions
@@ -104,14 +108,18 @@ session with `getKindeServerSession()`.
 creates a `File` row as `PROCESSING` and then:
 
 1. Load: `PdfPageLoader` reads the PDF into one Document per page.
-2. Check: if the page count is over the plan limit, or no page has any text
-   (a scanned PDF), the file is marked `FAILED` and nothing is embedded.
+2. Check (`checkPdf` in `src/lib/upload-check.ts`): if the page count is
+   over the plan limit, or no page has any text (a scanned PDF), the file is
+   marked `FAILED` with a `failureReason` (`TOO_MANY_PAGES` or `NO_TEXT`) and
+   its `pageCount`, and nothing is embedded. Any error later in the pipeline
+   marks it `FAILED` with `PROCESSING_ERROR`. The chat panel and the file
+   badge say which, and offer Pro when Pro's page limit would accept it.
 3. Split: LangChain's `RecursiveCharacterTextSplitter` cuts each page into
    chunks of about 1,000 characters with 200 characters of overlap. Each chunk
    keeps its page number.
 4. Embed and store: `DocumentChunkVectorStore.addDocuments` sends the chunks to
    the embedding model and inserts text plus vector into `DocumentChunk`.
-5. The file is marked `SUCCESS`.
+5. The file is marked `SUCCESS` with its `pageCount`.
 
 Before any of that, the upload middleware rejects the upload if the user has
 reached the plan's monthly quota. The browser checks type, size and quota
@@ -132,8 +140,9 @@ on Free, 12 on Pro), saves the new question, and runs one LangChain chain:
 
 1. Retrieve: the retriever embeds the question and asks Postgres for the
    chunks (4 on Free, 8 on Pro) of this file whose vectors are closest (`<=>`, cosine distance).
-2. Prompt: a chat prompt template is filled with those chunks (labelled by
-   page), the history and the question.
+2. Prompt: a chat prompt template is filled with those chunks (labelled
+   "[Page N]"), the history and the question. It asks the model to cite the
+   pages it used as "[p. N]" after each sentence.
 3. Model: `ChatGoogle` (Gemini) streams the answer.
 4. Parse: the output is reduced to plain text.
 
@@ -141,6 +150,12 @@ The route forwards the text stream to the browser and saves the full answer
 when the stream ends. The client (`ChatContext.tsx`) adds the user message
 optimistically and appends stream chunks into the React Query cache. Messages
 are paged 10 at a time by cursor (`getFileMessages`).
+
+Citations: when an answer is rendered, `linkCitations` turns each "[p. N]"
+into a markdown link, and the message renderer shows it as a small button.
+Clicking it sets the page in `FileWorkspace`, which owns the PDF viewer's
+page (and switches to the PDF tab on narrow screens). The viewer keeps the
+page inside the document if the model cites one that does not exist.
 
 **Billing.** `createStripeSession` opens Checkout for new subscribers or the
 billing portal for existing ones. The webhook handles
@@ -155,7 +170,9 @@ renewal). `getUserSubscriptionPlan()` in
 - `User`: `id` (Kinde id), `email`, Stripe customer / subscription / price IDs,
   `stripeCurrentPeriodEnd` (stored as a string).
 - `File`: `name`, `url`, `key`, `uploadStatus` (PENDING, PROCESSING, FAILED,
-  SUCCESS), timestamps, optional `userId`.
+  SUCCESS), `failureReason` (`UploadFailure`: TOO_MANY_PAGES, NO_TEXT,
+  PROCESSING_ERROR; only when FAILED), `pageCount`, timestamps, optional
+  `userId`.
 - `Message`: `text`, `isUserMessage`, timestamps, optional `userId`, `fileId`.
 - `DocumentChunk`: `content`, `pageNumber`, `embedding` (`vector(1536)`),
   `fileId`.
@@ -185,6 +202,7 @@ Names only. Values live in `.env` (git-ignored). Template: `.env.example`.
 | `UPLOADTHING_TOKEN` | UploadThing 7 (route handler and `UTApi`). One base64 token holding the API key, app id and region. Replaces `UPLOADTHING_SECRET` and `UPLOADTHING_APP_ID`, which can be deleted from `.env`. |
 | `GOOGLE_API_KEY` | Gemini embeddings and chat (read by LangChain from the environment) |
 | `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET` | Stripe client and webhook |
+| `NEXT_PUBLIC_SUPPORT_EMAIL` | Optional. Public support address on the policy pages; when unset they point to GitHub issues |
 | `VERCEL_URL`, `PORT` | `absoluteUrl()` in `src/lib/utils.ts` |
 
 `PINECONE_API_KEY` and `OPENAI_API_KEY` are no longer used and can be deleted
@@ -260,3 +278,10 @@ from `.env`.
   sign-in, Files with thumbnail, upload of a generated PDF, PDF viewer
   (react-pdf 11, canvas and text layer), chat, rename, delete, theme
   switch, `/auth-callback`, billing button to Stripe Checkout.
+- Citations, failure reasons, policy pages (2026-11-14): type-check, lint,
+  58 tests, build. Migration `20261114000000_upload_failure_reason`
+  applied to Neon. In the browser: an answer cited "p. 1" and "p. 2" and
+  clicking "p. 2" opened page 2 (PDF tab on a narrow screen); a 6-page PDF
+  on Free and a PDF without text each showed their own reason in the chat
+  panel and on the file badge; the four policy pages render in dark mode
+  and at 375px with no sideways scroll.

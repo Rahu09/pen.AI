@@ -34,11 +34,22 @@ enum UploadStatus {
   SUCCESS
 }
 
+// Why a file ended up FAILED, so the app can tell the user what to do.
+enum UploadFailure {
+  TOO_MANY_PAGES // more pages than the plan allows
+  NO_TEXT // no selectable text, e.g. a scanned PDF
+  PROCESSING_ERROR // download, embedding or database step failed
+}
+
 model File {
   id   String @id @default(cuid())
   name String
 
-  uploadStatus UploadStatus @default(PENDING)
+  uploadStatus  UploadStatus   @default(PENDING)
+  // Set only when uploadStatus is FAILED.
+  failureReason UploadFailure?
+  // Number of pages in the PDF, once it has been read.
+  pageCount     Int?
 
   url      String
   key      String

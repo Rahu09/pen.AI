@@ -29,7 +29,7 @@ export function FileCard({ file, onRename, onDelete }: FileItemProps) {
       >
         <PdfThumbnail url={file.url} enabled={file.uploadStatus === "SUCCESS"} />
         <span className="absolute left-2 top-2">
-          <FileStatusBadge status={file.uploadStatus} />
+          <FileStatusBadge status={file.uploadStatus} failureReason={file.failureReason} />
         </span>
       </Link>
 
@@ -72,7 +72,7 @@ export function FileRow({ file, onRename, onDelete }: FileItemProps) {
         </p>
       </div>
 
-      <FileStatusBadge status={file.uploadStatus} />
+      <FileStatusBadge status={file.uploadStatus} failureReason={file.failureReason} />
 
       <span className="hidden w-14 text-right text-xs text-muted-foreground sm:block">
         <MessageCount count={file._count.messages} />

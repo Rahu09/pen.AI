@@ -30,7 +30,9 @@ const prompt = ChatPromptTemplate.fromMessages([
     "system",
     `You answer questions about a PDF the user has uploaded.
 Answer in markdown, using only the context below and the conversation so far.
-Each piece of context starts with the page it came from.
+Each piece of context starts with a label naming the page it came from, like [Page 3].
+Cite your sources: after each sentence that uses the context, add the page it came from in the form [p. 3]. Use one bracket per page, e.g. [p. 3] [p. 5].
+Do not start your answer with a page label, and do not cite pages that are not in the context.
 If the answer is not in the context, say that you don't know. Do not make one up.
 
 CONTEXT:
@@ -40,7 +42,16 @@ CONTEXT:
   ["human", "{question}"],
 ]);
 
-/** Joins the retrieved chunks into one block of text, labelled by page. */
+/**
+ * Joins the retrieved chunks into one block of text, labelled by page.
+ *
+ * The page label is how citations work: each chunk keeps the page number it
+ * was cut from (set when the PDF was split, see uploadthing/core.ts), the
+ * model sees that number next to the text, and the prompt asks it to repeat
+ * the number as "[p. N]" after what it took from there. The browser turns
+ * those into buttons that open the page (src/lib/citations.ts). The model
+ * can still cite wrongly; the viewer keeps the page inside the document.
+ */
 const formatContext = (documents: Document[]) =>
   documents
     .map(
