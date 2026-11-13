@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { PLANS, getPlan, startOfQuotaPeriod } from "./stripe";
+import { PLANS, formatPrice, getPlan, startOfQuotaPeriod } from "./stripe";
 
 describe("PLANS", () => {
   it("gives Pro more of every limit than Free", () => {
@@ -11,6 +11,14 @@ describe("PLANS", () => {
     expect(pro.quota).toBeGreaterThan(free.quota);
     expect(pro.pagesPerPdf).toBeGreaterThan(free.pagesPerPdf);
     expect(pro.maxFileSizeMb).toBeGreaterThan(free.maxFileSizeMb);
+    // "Higher-quality answers" on the pricing page rests on these two.
+    expect(pro.retrievalTopK).toBeGreaterThan(free.retrievalTopK);
+    expect(pro.historyMessages).toBeGreaterThan(free.historyMessages);
+  });
+
+  it("shows prices in rupees without decimals", () => {
+    expect(formatPrice(getPlan(false))).toBe("₹0");
+    expect(formatPrice(getPlan(true))).toBe("₹199");
   });
 
   it("matches the UploadThing size limits (4 MB and 16 MB in core.ts)", () => {

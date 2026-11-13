@@ -15,13 +15,11 @@ export function absoluteUrl(path: string) {
 export function constructMetadata({
   title = "pen.AI - Chat with your PDFs",
   description = "Upload a PDF and ask it questions. pen.AI finds the passages that matter and answers from what the document says.",
-  image = "/thumbnail.png",
   icons = "/favicon.ico",
   noIndex = false,
 }: {
   title?: string;
   description?: string;
-  image?: string;
   icons?: string;
   noIndex?: boolean;
 } = {}): Metadata {
@@ -31,17 +29,11 @@ export function constructMetadata({
     openGraph: {
       title,
       description,
-      images: [
-        {
-          url: image,
-        },
-      ],
     },
     twitter: {
       card: "summary_large_image",
       title,
       description,
-      images: [image],
       creator: "@TiRahu86",
     },
     icons,

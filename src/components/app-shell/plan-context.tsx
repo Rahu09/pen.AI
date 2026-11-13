@@ -10,6 +10,8 @@ export type PlanInfo = {
   quota: number;
   pagesPerPdf: number;
   maxFileSizeMb: number;
+  /** Passages of the PDF read for each question */
+  retrievalTopK: number;
 };
 
 const PlanContext = createContext<PlanInfo | null>(null);

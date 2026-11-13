@@ -18,8 +18,6 @@ export const EMBEDDING_DIMENSIONS = 1536;
 export const CHUNK_SIZE = 1000;
 export const CHUNK_OVERLAP = 200;
 
-// How many chunks are retrieved and put into the prompt for each question.
-export const RETRIEVAL_TOP_K = 4;
-
-// How many previous messages are sent along as conversation history.
-export const HISTORY_MESSAGES = 6;
+// How many chunks are retrieved per question, and how much chat history is
+// sent along, depend on the user's plan: see `retrievalTopK` and
+// `historyMessages` in src/config/stripe.ts.

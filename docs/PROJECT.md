@@ -10,8 +10,7 @@ with pgvector. Each question retrieves the most relevant chunks and sends them
 to a chat model. Free and Pro plans differ in file size, pages per PDF and file
 quota. Pro is a Stripe subscription.
 
-The codebase started from the "Quill" tutorial project. The package name in
-`package.json` is still `quill`.
+The codebase started from the "Quill" tutorial project. Licence: MIT.
 
 - Repo: https://github.com/Rahu09/pen.AI (public)
 - Deployed at: https://pen-ai.vercel.app (the deployment predates phase 2 and
@@ -22,7 +21,7 @@ The codebase started from the "Quill" tutorial project. The package name in
 | Area | Library | Version |
 |---|---|---|
 | Framework | Next.js App Router, React | 14.2.35, 18.2.0 |
-| API | tRPC + TanStack Query | 10.x, 4.x |
+| API | tRPC + TanStack Query | 11.28, 5.107 |
 | Database | Prisma on PostgreSQL (Neon) with pgvector; queries go through the `pg` driver adapter (`@prisma/adapter-pg`) | 7.10 |
 | Auth | Kinde (`@kinde-oss/kinde-auth-nextjs`) | 2.13 |
 | Uploads | UploadThing | 7.7 (`@uploadthing/react` 7.3). New files are served from `https://<app>.ufs.sh/f/<key>` (`file.ufsUrl`); older rows keep `utfs.io` URLs, which still work. |
@@ -80,8 +79,9 @@ src/components/Wordmark.tsx   Logo: quill in an ink circle, name in the serif
 src/components/marketing/*    TypedHeadline (typed hero title + ink underline), ProductPreview, Bloom, SiteFooter, shared button classes
 src/components/ui/*           shadcn primitives
 src/lib/pdfjs.ts              pdf.js worker setup (self-hosted); import Document and Page from here. The viewer is loaded browser-only (`next/dynamic`, `ssr: false`)
-src/config/stripe.ts          PLANS (monthly quota, pagesPerPdf, maxFileSizeMb, price IDs), getPlan()
-src/config/ai.ts              Model names, chunk sizes, how many chunks to retrieve
+src/config/stripe.ts          PLANS (monthly quota, pagesPerPdf, maxFileSizeMb, retrievalTopK, historyMessages, price and currency, price IDs), getPlan(), formatPrice()
+src/config/ai.ts              Model names and chunk sizes
+src/app/opengraph-image.tsx, twitter-image.tsx   Link preview image, drawn in code (edge runtime)
 src/lib/pdf-loader.ts         PdfPageLoader: PDF to one LangChain Document per page
 src/lib/embeddings.ts         GeminiEmbeddings: text to vectors, separate modes for documents and questions
 src/lib/vector-store.ts       DocumentChunkVectorStore: LangChain vector store on pgvector
@@ -127,11 +127,11 @@ refuses. Deleting removes the row (chunks and messages cascade) and then the
 PDF from UploadThing.
 
 **Chat** (`src/app/api/message/route.ts`). After the auth and ownership checks,
-the route reads the latest 6 messages as history, saves the new question, and
-runs one LangChain chain:
+the route looks up the user's plan, reads the latest messages as history (6
+on Free, 12 on Pro), saves the new question, and runs one LangChain chain:
 
-1. Retrieve: the retriever embeds the question and asks Postgres for the 4
-   chunks of this file whose vectors are closest (`<=>`, cosine distance).
+1. Retrieve: the retriever embeds the question and asks Postgres for the
+   chunks (4 on Free, 8 on Pro) of this file whose vectors are closest (`<=>`, cosine distance).
 2. Prompt: a chat prompt template is filled with those chunks (labelled by
    page), the history and the question.
 3. Model: `ChatGoogle` (Gemini) streams the answer.
@@ -251,3 +251,7 @@ from `.env`.
   type-check, lint, test, build) pass locally with the placeholder
   environment from the workflow. First run on GitHub green (owner,
   2026-11-13, commit `c7f29ee`).
+- tRPC 11 and React Query 5 (same day): type-check, lint, 43 tests. In
+  the browser on a fresh dev server: Files page, upload of a generated PDF
+  to `SUCCESS`, chat (optimistic message and streamed answer), rename,
+  delete, billing button to Stripe Checkout, `/auth-callback` redirect.

@@ -438,6 +438,52 @@ Entry format:
   `@/generated/prisma/client`. `pnpm install` must run `prisma generate`
   (postinstall) before type-check or build, which CI already does.
 
+## D-021: The "ink on aurora" design is approved
+
+- Date: 2026-11-14
+- Status: Accepted. Resolves O-9.
+- Context: The owner was asked to review the look from D-015 and D-016 in
+  light and dark.
+- Decision: "It's good, keep it." The design in `docs/DESIGN.md` stands.
+- Alternatives: None raised.
+- Consequences: New screens follow `docs/DESIGN.md` without a further
+  review of the direction.
+
+## D-022: Pro costs INR 199 a month
+
+- Date: 2026-11-14
+- Status: Accepted.
+- Context: The pricing page showed "$500" while the Stripe price charged
+  INR 1,999 a month. The owner said "keep it 199 a month" and, asked which
+  currency, chose rupees only.
+- Decision: One price, INR 199 a month, shown as "₹199". `PLANS` carries
+  the amount and the currency; `formatPrice()` renders it.
+- Alternatives: INR 199 plus a USD 1.99 price (two Stripe prices and code to
+  pick one per visitor). USD 199.
+- Consequences: The Stripe price id in `src/config/stripe.ts` still points
+  at the old INR 1,999 price. Until the owner creates an INR 199 monthly
+  price and its id is put there, checkout charges more than the page says.
+
+## D-023: Pro reads more of the document; no support promise
+
+- Date: 2026-11-14
+- Status: Accepted (owner picked Claude's recommended option).
+- Context: The pricing page promised Pro "Higher-quality responses" and
+  "Priority support". Both plans got identical answers and there is no
+  support channel.
+- Decision: Make the first claim true and remove the second. Pro retrieves
+  8 passages per question instead of 4 and sends the last 12 messages as
+  history instead of 6 (`retrievalTopK`, `historyMessages` in `PLANS`,
+  read by the chat route). "Priority support" is gone from the page.
+- Alternatives: Remove both lines (plans would differ only in upload
+  limits). Also add a support email for Pro (needs someone to answer it).
+  A stronger model for Pro (costs more per answer and may not be on the
+  free Gemini tier).
+- Consequences: Same model for both plans; the difference is how much of
+  the PDF and the conversation it sees. Pro prompts are about twice as
+  long, so they use more of the Gemini quota. The pricing page states the
+  actual numbers, read from `PLANS`.
+
 ---
 
 # Open decisions
@@ -447,7 +493,6 @@ Not yet decided by the owner. Recommendations are Claude's and are not binding.
 | # | Question | Options | Recommendation |
 |---|---|---|---|
 | O-7 | Confirm D-012 (own vector store and PDF loader on LangChain core)? | Keep it; or switch to the official `@langchain/pgvector` store | Keep it |
-| O-9 | Is the "ink on aurora" look, light and dark (D-015, D-016, `docs/DESIGN.md`), what you want? | Keep it; or name what to change | Look at the landing page and Files page in the browser |
 
-Resolved: O-8 became D-015. O-1 became D-004, O-2 became D-005, O-3 became D-006, O-4 became
+Resolved: O-9 became D-021. O-8 became D-015. O-1 became D-004, O-2 became D-005, O-3 became D-006, O-4 became
 D-009, O-5 became D-010 and then D-011, O-6 became D-007 and then D-008.

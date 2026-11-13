@@ -15,6 +15,58 @@ Entry format:
 
 ---
 
+## 2026-11-14: Price, Pro quality claim, preview image, licence, package name
+
+- Asked: Pro at 199 a month; what to do about the two unbacked Pro claims;
+  design review; update the link preview image, the licence file and the
+  package name.
+- Decided: design approved (D-021); Pro is INR 199 a month (D-022); Pro
+  reads 8 passages and 12 messages per question against 4 and 6, and
+  "Priority support" is removed (D-023).
+- Done: `PLANS` gained `retrievalTopK`, `historyMessages`, `currency`
+  and `formatPrice()`; the chat route reads the plan; the pricing and
+  billing pages show the real numbers; `src/app/opengraph-image.tsx` and
+  `twitter-image.tsx` replace `public/thumbnail.png`; `LICENSE` (MIT);
+  package renamed to `pen.ai`. Nothing committed.
+- Found: `ImageResponse` fails in the Node runtime on Windows under Next 14
+  (invalid font path), so the image routes run on the edge runtime.
+- Verified: type-check, lint, 44 tests. In the browser: pricing page shows
+  ₹0 and ₹199 with the new feature lines; both image routes return a PNG,
+  and the page carries the og:image and twitter:image tags.
+- Not verified: plan-based retrieval in a real chat on a Pro account;
+  production build (a dev server was running).
+- Open: the Stripe price id still points at the INR 1,999 price. The owner
+  has to create the INR 199 price.
+- Next: the Stripe webhook against a real test event, once the new price
+  exists.
+
+## 2026-11-13: tRPC 11 and React Query 5 (same chat as below)
+
+- Asked: upgrade tRPC and React Query together.
+- Done: `@trpc/server`, `@trpc/client`, `@trpc/react-query` 10 to 11.28;
+  `@tanstack/react-query` 4 to 5.107; unused `@trpc/next` removed.
+  Code: `trpc.useContext()` to `useUtils()` (ChatContext,
+  use-file-actions, use-pdf-upload); mutation `isLoading` to `isPending`
+  (BillingForm, Dashboard); `refetchInterval` callbacks read
+  `query.state.data` (ChatWrapper, Dashboard); `keepPreviousData` dropped
+  from Messages (the input never changes); `httpBatchLink` from
+  `@trpc/client`; `/auth-callback` redirects moved into `useEffect`, and
+  it no longer retries forever on `UNAUTHORIZED`.
+- Fixed on the way: the chat's rollback after a failed send wrote to the
+  wrong cache key, so the old messages never came back; the optimistic
+  message also mutated the cached page in place.
+- Verified: type-check, lint, 43 tests; in the browser on a fresh dev
+  server: Files, upload of a generated PDF, chat (answer streamed from the
+  PDF), rename, delete, billing button to Stripe Checkout (test mode, no
+  details entered), `/auth-callback` with a safe `origin`.
+- Found: a dev server running across a package install keeps the old
+  modules and fails ("No QueryClient set"); it has to be restarted.
+- Open: production build not run locally (CI will). The dev server now on
+  port 3000 (PID 19828) is not attached to Claude's preview.
+- Next: commit; then Next 15/16 with React 19 (unpins react-pdf and
+  react-resizable-panels), or the open product decisions (Pro price,
+  pricing copy, "[Page 1]" prefix).
+
 ## 2026-11-13: Prisma 7 and Stripe 23 (same chat as below)
 
 - Asked: move on to Prisma and Stripe.

@@ -52,6 +52,7 @@ const BillingForm = ({ subscriptionPlan }: BillingFormProps) => {
     `${plan.quota} PDF uploads per month`,
     `Up to ${plan.pagesPerPdf} pages per PDF`,
     `Up to ${plan.maxFileSizeMb} MB per file`,
+    `${plan.retrievalTopK} passages read per question`,
   ];
 
   return (

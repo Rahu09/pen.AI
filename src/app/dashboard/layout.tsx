@@ -31,6 +31,7 @@ export default async function DashboardLayout({
         quota: plan.quota,
         pagesPerPdf: plan.pagesPerPdf,
         maxFileSizeMb: plan.maxFileSizeMb,
+        retrievalTopK: plan.retrievalTopK,
       }}
     >
       {children}

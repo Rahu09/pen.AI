@@ -9,7 +9,7 @@ Phase 4 (dashboard) was done before phase 3 (dependencies) at the owner's reques
 - [x] `docs/PROJECT.md`, `docs/ROADMAP.md`, `docs/DECISIONS.md`, `docs/SESSION_LOG.md`
 - [x] `.env.example`
 - [x] README setup steps use pnpm and point at `.env.example`
-- [ ] Add a LICENSE file (README links to one that does not exist)
+- [x] LICENSE file (MIT, as the README says)
 
 ## Phase 2: Secure and revive
 
@@ -64,7 +64,7 @@ Pinecone removal are in phase 2, because the retrieval code is rewritten there.
 
 - [x] Next.js 13.5 to 14.2.35 (React 18 kept). Needed first: Kinde SDK 2 does not support Next 13.3 to 14.2.34
 - [ ] Next.js 15 or 16 and React 19 (async request APIs, `params` as promise)
-- [ ] tRPC 10 to 11 and TanStack Query 4 to 5
+- [x] tRPC 10 to 11.28 and TanStack Query 4 to 5.107: `useUtils`, `isPending` for mutations, `refetchInterval` reads `query.state.data`, `/auth-callback` redirects moved into effects (queries lost `onSuccess` / `onError`). Checked in the browser: Files, upload, chat, rename, delete, billing, auth callback
 - [x] Kinde SDK 1.8 to 2.13: `getUser()` awaited everywhere, `handleAuth()` route, link components from `/components`, `withAuth` middleware. SDK 1.8's token logging is gone
 - [x] UploadThing 5 to 7.7: `createRouteHandler`, `UTApi`, `file.ufsUrl`, `awaitServerData: false`; one `UPLOADTHING_TOKEN` replaces the secret and app id
 - [x] Prisma 5 to 7.10: `prisma-client` generator (CommonJS) into `src/generated/prisma`, `prisma.config.ts`, `pg` driver adapter; TypeScript 5.2 to 5.9 (Prisma 7 needs 5.4+). Checked live against Neon: typed queries, raw SQL, pgvector search, `migrate status`
@@ -129,9 +129,10 @@ Not yet checked:
 - [x] Aceternity components and `framer-motion` removed (the aurora and the typed headline were rewritten in CSS); `public/dashboard-preview.jpg` and `public/file-upload-preview.jpg` deleted
 - [x] Dark mode on the public pages, and the dark theme reworked to match the design (D-016)
 - [x] Link check: signed-out `/dashboard` now goes to sign-in and returns to the page; pricing "Sign up" buttons go to sign-up; Free card says "Open your files" when signed in
-- [ ] Owner's review of the "ink on aurora" look, light and dark (O-9)
-- [ ] `public/thumbnail.png` (link preview image) still shows the old design
-- [ ] Pricing page shows Pro as "$500", but the Stripe price charges INR 1,999.00 a month (checked 2026-11-13). Owner to decide the price; then make `PLANS` match Stripe (amount and currency)
+- [x] Owner's review of the "ink on aurora" look, light and dark: approved (D-021)
+- [x] Link preview image is generated from code (`src/app/opengraph-image.tsx`, `twitter-image.tsx`) in the current design; `public/thumbnail.png` deleted
+- [x] Pro price is INR 199 a month in `PLANS` and on the pricing page (D-022)
+- [ ] Owner: create an INR 199 monthly price in Stripe and give Claude its id (or put it in `src/config/stripe.ts`). Until then checkout still charges the old INR 1,999
 - [ ] The four `/payment/*` pages are empty stubs
 
 ## Phase 5: Correctness
@@ -150,11 +151,14 @@ Not yet checked:
 - [ ] Stripe webhook: not yet exercised with a real test event (`stripe trigger` or a test checkout)
 - [x] Indexes on `File.userId`, `Message.fileId`, `Message.userId`
 - [x] `src/app/(marketing)/pricing/page.tsx`: plan limits are read from `PLANS`
-- [ ] Pricing copy promises "Higher-quality responses" and "Priority support" for Pro; neither exists in the code (both plans use the same model). Owner to decide: keep, reword or remove
+- [x] Pricing copy: Pro now does read more passages and keep more history per question; "Priority support" removed (D-023)
+- [ ] Plan-based retrieval is type-checked and unit-tested at the config level only; not yet exercised in the browser on a Pro account
 - [x] `src/app/(marketing)/auth-callback/page.tsx`: validate `origin` before redirecting (only plain in-app paths; anything else goes to `/dashboard`)
 - [ ] Quota counts files that still exist: deleting a file gives the upload back. Count uploads in their own table if that matters
 - [x] `src/app/layout.tsx`: no-op `content` attribute removed; `Providers` is inside `<body>`
-- [~] Branding: page title and description fixed; package name is still `quill`
+- [x] Branding: page title, description and package name (`pen.ai`)
+- [x] Chat: a failed send restored the old messages into the wrong cache entry, so nothing came back. It now restores the saved pages; the optimistic message no longer edits the cached page in place
+- [x] `/auth-callback` retried forever when signed out; it now stops retrying on `UNAUTHORIZED` and goes to sign-in
 - [x] Remove leftover `console.log` in `src/trpc/index.ts` (and the commented-out ones in `src/lib/stripe.ts`)
 
 ## Phase 6: Quality

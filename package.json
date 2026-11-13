@@ -1,5 +1,5 @@
 {
-  "name": "quill",
+  "name": "pen.ai",
   "version": "0.1.0",
   "private": true,
   "engines": {
@@ -80,5 +80,6 @@
       "@prisma/engines",
       "prisma"
     ]
-  }
+  },
+  "license": "MIT"
 }

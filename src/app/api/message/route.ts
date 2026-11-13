@@ -1,7 +1,9 @@
 import { db } from "@/db";
 import { getVectorStore } from "@/lib/vector-store";
 import { SendMessageValidator } from "@/lib/validators/SendMessageValidator";
-import { CHAT_MODEL, HISTORY_MESSAGES, RETRIEVAL_TOP_K } from "@/config/ai";
+import { CHAT_MODEL } from "@/config/ai";
+import { getPlan } from "@/config/stripe";
+import { getUserSubscriptionPlan } from "@/lib/stripe";
 import { getKindeServerSession } from "@kinde-oss/kinde-auth-nextjs/server";
 import type { Document } from "@langchain/core/documents";
 import {
@@ -71,6 +73,13 @@ export const POST = async (req: NextRequest) => {
 
   if (!file) return new Response("Not found", { status: 404 });
 
+  // The plan decides how much of the document and of the conversation the
+  // model gets to see. Pro retrieves more passages per question and carries
+  // a longer history, which is what "higher-quality responses" means here:
+  // same model, more of the PDF in front of it.
+  const { isSubscribed } = await getUserSubscriptionPlan();
+  const plan = getPlan(isSubscribed);
+
   // The latest few messages, oldest first. Read before the new question is
   // saved so the question is not sent twice.
   const recentMessages = await db.message.findMany({
@@ -80,7 +89,7 @@ export const POST = async (req: NextRequest) => {
     orderBy: {
       createdAt: "desc",
     },
-    take: HISTORY_MESSAGES,
+    take: plan.historyMessages,
   });
 
   const history = recentMessages
@@ -99,7 +108,9 @@ export const POST = async (req: NextRequest) => {
   });
 
   // The retriever embeds the question and returns this file's closest chunks.
-  const retriever = getVectorStore(file.id).asRetriever({ k: RETRIEVAL_TOP_K });
+  const retriever = getVectorStore(file.id).asRetriever({
+    k: plan.retrievalTopK,
+  });
 
   // Reads GOOGLE_API_KEY from the environment.
   const model = new ChatGoogle({ model: CHAT_MODEL });

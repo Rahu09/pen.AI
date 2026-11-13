@@ -8,10 +8,10 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import { PLANS } from "@/config/stripe";
+import { PLANS, formatPrice } from "@/config/stripe";
 import { cn } from "@/lib/utils";
 import { getKindeServerSession } from "@kinde-oss/kinde-auth-nextjs/server";
-import { ArrowRight, Check, HelpCircle, Minus } from "lucide-react";
+import { ArrowRight, Check, HelpCircle } from "lucide-react";
 import Link from "next/link";
 
 const Page = async () => {
@@ -31,7 +31,7 @@ const Page = async () => {
       plan: p.name,
       tagline: taglines[p.slug],
       quota: p.quota,
-      price: p.price.amount,
+      price: formatPrice(p),
       features: [
         {
           text: `${p.pagesPerPdf} pages per PDF`,
@@ -45,13 +45,16 @@ const Page = async () => {
           text: "Mobile-friendly interface",
         },
         {
-          text: "Higher-quality responses",
-          footnote: "Better algorithmic responses for enhanced content quality",
-          negative: !isPro,
+          text: isPro
+            ? `Higher-quality answers: ${p.retrievalTopK} passages read per question`
+            : `${p.retrievalTopK} passages read per question`,
+          footnote:
+            "How many passages of your PDF are found and read for each question. More passages let an answer draw on more of the document.",
         },
         {
-          text: "Priority support",
-          negative: !isPro,
+          text: `Remembers the last ${p.historyMessages} messages`,
+          footnote:
+            "How much of the conversation is kept in mind when you ask a follow-up question.",
         },
       ],
     };
@@ -94,7 +97,7 @@ const Page = async () => {
                     </h3>
                     <p className="text-muted-foreground">{tagline}</p>
                     <p className="my-5 font-serif text-6xl">
-                      ${price}
+                      {price}
                     </p>
                     <p className="text-muted-foreground">per month</p>
                   </div>
@@ -115,24 +118,12 @@ const Page = async () => {
                   </div>
 
                   <ul className="my-10 space-y-5 px-8">
-                    {features.map(({ text, footnote, negative }) => (
+                    {features.map(({ text, footnote }) => (
                       <li key={text} className="flex space-x-5">
-                        <div className="flex-shrink-0">
-                          {negative ? (
-                            <Minus className="h-6 w-6 text-muted-foreground/40" />
-                          ) : (
-                            <Check className="h-6 w-6 text-primary" />
-                          )}
-                        </div>
-                        {footnote ? (
-                          <div className="flex items-center space-x-1">
-                            <p
-                              className={cn("text-muted-foreground", {
-                                "text-muted-foreground/60": negative,
-                              })}
-                            >
-                              {text}
-                            </p>
+                        <Check className="h-6 w-6 flex-shrink-0 text-primary" />
+                        <div className="flex items-center space-x-1">
+                          <p className="text-muted-foreground">{text}</p>
+                          {footnote ? (
                             <Tooltip delayDuration={300}>
                               <TooltipTrigger className="cursor-default ml-1.5">
                                 <HelpCircle className="h-4 w-4 text-muted-foreground" />
@@ -141,16 +132,8 @@ const Page = async () => {
                                 {footnote}
                               </TooltipContent>
                             </Tooltip>
-                          </div>
-                        ) : (
-                          <p
-                            className={cn("text-muted-foreground", {
-                              "text-muted-foreground/60": negative,
-                            })}
-                          >
-                            {text}
-                          </p>
-                        )}
+                          ) : null}
+                        </div>
                       </li>
                     ))}
                   </ul>
