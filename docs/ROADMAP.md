@@ -60,9 +60,10 @@ Still to do once the owner actions are done:
 One group per commit, app verified after each. The LangChain upgrade and the
 Pinecone removal are in phase 2, because the retrieval code is rewritten there.
 
-- [ ] Next.js and React to current majors (async request APIs, `params` as promise)
+- [x] Next.js 13.5 to 14.2.35 (React 18 kept). Needed first: Kinde SDK 2 does not support Next 13.3 to 14.2.34
+- [ ] Next.js 15 or 16 and React 19 (async request APIs, `params` as promise)
 - [ ] tRPC 10 to 11 and TanStack Query 4 to 5
-- [ ] Kinde SDK 1 to 2 (`getUser()` becomes async everywhere). Recheck `src/middleware.ts`, which reads the SDK's `kinde_token` cookie. Do this early: SDK 1.8 prints the access, ID and refresh tokens to the server log on every sign-in
+- [x] Kinde SDK 1.8 to 2.13: `getUser()` awaited everywhere, `handleAuth()` route, link components from `/components`, `withAuth` middleware. SDK 1.8's token logging is gone
 - [ ] UploadThing 5 to current (the hardcoded S3 host is already gone)
 - [ ] Prisma and Stripe to current; pin a current Stripe API version
 - [ ] react-pdf to current; self-host the pdf.js worker instead of the CDN URL
@@ -137,7 +138,7 @@ Not yet checked:
 - [ ] `src/app/api/webhooks/stripe/route.ts`: `invoice.payment_succeeded` payload is cast to a Checkout Session
 - [x] Indexes on `File.userId`, `Message.fileId`, `Message.userId`
 - [ ] `src/app/(marketing)/pricing/page.tsx`: plan limits are hardcoded in copy instead of read from `PLANS`
-- [ ] `src/app/(marketing)/auth-callback/page.tsx`: validate `origin` before redirecting
+- [x] `src/app/(marketing)/auth-callback/page.tsx`: validate `origin` before redirecting (only plain in-app paths; anything else goes to `/dashboard`)
 - [ ] Quota counts files that still exist: deleting a file gives the upload back. Count uploads in their own table if that matters
 - [x] `src/app/layout.tsx`: no-op `content` attribute removed; `Providers` is inside `<body>`
 - [~] Branding: page title and description fixed; package name is still `quill`
@@ -148,7 +149,7 @@ Not yet checked:
 - [ ] Test runner and tests for the tRPC router, the Stripe webhook and plan-limit logic
 - [ ] GitHub Actions: install, type-check, lint, test, build
 - [ ] Error boundaries and `not-found` / `error` pages for the dashboard routes
-- [ ] Fix the lint warnings (hook dependency arrays)
+- [x] Fix the lint warnings (lint is clean as of 2026-11-13)
 - [ ] Dev server logs "Invalid hook call ... reading 'useMemo'" once when `/auth-callback` first renders; the page still works. Recheck after the Next.js upgrade
 - [ ] Decide whether to keep `qodana.yaml`
 

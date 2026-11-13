@@ -14,7 +14,7 @@
   },
   "dependencies": {
     "@hookform/resolvers": "^3.3.2",
-    "@kinde-oss/kinde-auth-nextjs": "^1.8.22",
+    "@kinde-oss/kinde-auth-nextjs": "^2.13.2",
     "@langchain/core": "^1.4.0",
     "@langchain/google": "^0.2.14",
     "@langchain/google-genai": "^2.3.6",
@@ -44,9 +44,8 @@
     "clsx": "^2.0.0",
     "date-fns": "^2.30.0",
     "eslint": "8.49.0",
-    "eslint-config-next": "13.5.2",
     "lucide-react": "^0.279.0",
-    "next": "13.5.2",
+    "next": "14.2.35",
     "next-themes": "^0.4.6",
     "pdf-parse": "^1.1.1",
     "postcss": "8.4.30",
@@ -71,6 +70,7 @@
     "zod": "^3.22.4"
   },
   "devDependencies": {
+    "eslint-config-next": "14.2.35",
     "prisma": "^5.11.0"
   },
   "pnpm": {

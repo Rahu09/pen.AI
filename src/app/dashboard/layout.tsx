@@ -9,7 +9,7 @@ export default async function DashboardLayout({
   children: React.ReactNode;
 }) {
   const { getUser } = getKindeServerSession();
-  const user = getUser();
+  const user = await getUser();
 
   // Signed-out visitors are redirected by the page itself, which knows where
   // to send them back to. Render it bare so that redirect can happen.

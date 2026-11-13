@@ -352,6 +352,23 @@ Entry format:
 - Consequences: Any new public-page markup must use theme tokens. A visitor
   whose system is dark sees the landing page dark by default.
 
+## D-017: Next.js 14 before Kinde SDK 2, Next 15+ later
+
+- Date: 2026-11-13
+- Status: Accepted (owner asked Claude to start on the work it can do;
+  the order was forced by the SDK and chosen by Claude).
+- Context: The roadmap had the Kinde SDK upgrade early because SDK 1.8
+  logs tokens. Kinde SDK 2.13 supports Next ~13.0 to 13.2 and 14.2.35+, not
+  the 13.5 in use.
+- Decision: Move Next to 14.2.35 (React 18 kept, synchronous `params` and
+  request APIs unchanged), then Kinde to 2.13. Next 15 or 16 with React 19
+  stays a separate step.
+- Alternatives: Jump straight to Next 16 and React 19 (async `params`,
+  `cookies()`, tRPC and React Query changes all at once; a much larger
+  change to verify). Stay on Kinde 1.8 (keeps the token logging).
+- Consequences: Two Next upgrades instead of one, but each is small enough
+  to check in the browser.
+
 ---
 
 # Open decisions

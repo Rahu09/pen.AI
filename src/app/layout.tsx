@@ -3,6 +3,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { cn, constructMetadata } from "@/lib/utils";
 import { Caveat, Inter, Instrument_Serif } from "next/font/google";
 import "simplebar-react/dist/simplebar.min.css";
+import type { Viewport } from "next";
 import "./globals.css";
 
 // Inter for the interface, Instrument Serif for headlines, Caveat for the
@@ -19,6 +20,16 @@ const serif = Instrument_Serif({
 const hand = Caveat({ subsets: ["latin"], variable: "--font-hand" });
 
 export const metadata = constructMetadata();
+
+// Browser chrome colour (mobile address bar). Since Next 14 it belongs in the
+// viewport export, not in metadata. The values are the page background in
+// light and dark (`--background` in globals.css).
+export const viewport: Viewport = {
+  themeColor: [
+    { media: "(prefers-color-scheme: light)", color: "#ffffff" },
+    { media: "(prefers-color-scheme: dark)", color: "#0b0a14" },
+  ],
+};
 
 export default function RootLayout({
   children,

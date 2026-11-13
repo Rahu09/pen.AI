@@ -2,8 +2,8 @@ import Link from "next/link";
 import {
   LoginLink,
   RegisterLink,
-  getKindeServerSession,
-} from "@kinde-oss/kinde-auth-nextjs/server";
+} from "@kinde-oss/kinde-auth-nextjs/components";
+import { getKindeServerSession } from "@kinde-oss/kinde-auth-nextjs/server";
 import { ArrowRight } from "lucide-react";
 import { arrowNudge, buttonSize, inkButton } from "./marketing/styles";
 import { cn } from "@/lib/utils";
@@ -15,9 +15,9 @@ const navLink =
   "inline-flex h-9 items-center rounded-full px-3 text-sm font-medium text-foreground/75 outline-none transition-colors hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring";
 
 /** Top bar of the public pages. The signed-in app has its own shell. */
-const Navbar = () => {
+const Navbar = async () => {
   const { getUser } = getKindeServerSession();
-  const user = getUser();
+  const user = await getUser();
 
   return (
     <nav

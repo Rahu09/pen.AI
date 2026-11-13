@@ -21,10 +21,10 @@ The codebase started from the "Quill" tutorial project. The package name in
 
 | Area | Library | Version |
 |---|---|---|
-| Framework | Next.js App Router, React | 13.5.2, 18.2.0 |
+| Framework | Next.js App Router, React | 14.2.35, 18.2.0 |
 | API | tRPC + TanStack Query | 10.x, 4.x |
 | Database | Prisma on PostgreSQL (Neon) with pgvector | 5.11 |
-| Auth | Kinde (`@kinde-oss/kinde-auth-nextjs`) | 1.8 |
+| Auth | Kinde (`@kinde-oss/kinde-auth-nextjs`) | 2.13 |
 | Uploads | UploadThing | Works (upload from localhost, 2026-11-13). Files are served from `https://utfs.io/f/<key>`, which is what the SDK passes as `file.url`. |
 | Retrieval | `@langchain/core`, `@langchain/textsplitters` | 1.4, 1.0 |
 | Chat | Google `gemini-3.5-flash-lite` through `@langchain/google` (`ChatGoogle`) | 0.2 |
@@ -43,7 +43,7 @@ phase 3).
 ```
 prisma/schema.prisma          User, File, Message, DocumentChunk, UploadStatus
 prisma/migrations/            SQL migrations (the second one enables pgvector)
-src/middleware.ts             Signed-out visits to /dashboard/* go to Kinde sign-in, then back via /auth-callback
+src/middleware.ts             Kinde `withAuth` on /dashboard/*: signed-out visitors go to sign-in and come back to the page
 src/app/
   layout.tsx                  Root: fonts, providers (theme, tRPC), toaster
   (marketing)/                Public pages; share the marketing navbar
@@ -185,7 +185,7 @@ from `.env`.
 | Pinecone | Removed from the code (D-008). The old key was public until the history rewrite (D-011) and should be revoked. |
 | Google Gemini | Chat and embeddings (D-013). Both models verified against the live API on 2026-11-13. Free tier, which has rate limits. |
 | OpenAI | No longer used (D-013). The old key in `.env` was already invalid. |
-| Kinde | Sign-in from localhost works (2026-11-13). SDK 1.8 prints tokens to the server log on sign-in; fixed by the upgrade in phase 3. The client secret was public in git history from 2023-10-01 until the 2026-11-13 rewrite (D-011); whether it has been rotated since is not known. |
+| Kinde | Sign-in from localhost works (2026-11-13). SDK 2.13 since 2026-11-13 (1.8 printed tokens to the server log on sign-in). The client secret was public in git history from 2023-10-01 until the 2026-11-13 rewrite (D-011); whether it has been rotated since is not known. |
 | Stripe | Only a test-mode price ID is configured; the production ID is empty. Keys not re-verified. |
 | UploadThing | File URL is built from a hardcoded S3 host instead of the URL UploadThing returns. Keys not re-verified. |
 | Vercel | Needs: new `DATABASE_URL`, `DIRECT_URL`, `GOOGLE_API_KEY`; Node 22+; `prisma migrate deploy` run once against Neon. |
@@ -223,4 +223,12 @@ from `.env`.
 - Dark mode on every page and the link check (same day): type-check and
   lint pass; build not rerun (the dev server was running). Every public
   and app link clicked or fetched, signed in and signed out.
+- Next 14.2.35 and Kinde 2.13 (same day): type-check and lint pass.
+  Signed out: every protected route redirects to sign-in with the return
+  path. Signed in: landing, Files (with thumbnail), billing and the file
+  page work.
+- Production build on Next 14 (same day): passes after two fixes
+  (`/auth-callback` wrapped in Suspense; `themeColor` moved to the
+  `viewport` export). `/auth-callback` checked in the browser with a safe
+  and an unsafe `origin`.
 - Tests: none. CI: none.

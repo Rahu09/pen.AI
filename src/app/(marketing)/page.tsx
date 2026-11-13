@@ -1,8 +1,6 @@
 import Link from "next/link";
-import {
-  RegisterLink,
-  getKindeServerSession,
-} from "@kinde-oss/kinde-auth-nextjs/server";
+import { RegisterLink } from "@kinde-oss/kinde-auth-nextjs/components";
+import { getKindeServerSession } from "@kinde-oss/kinde-auth-nextjs/server";
 import { ArrowRight } from "lucide-react";
 import { Aurora } from "@/components/Aurora";
 import { Bloom } from "@/components/marketing/Bloom";
@@ -56,9 +54,9 @@ const UNDER_THE_HOOD = [
   },
 ];
 
-export default function Home() {
+export default async function Home() {
   const { getUser } = getKindeServerSession();
-  const user = getUser();
+  const user = await getUser();
 
   const primary = cn(inkButton, buttonSize.lg);
   const cta = user ? (

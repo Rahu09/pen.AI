@@ -53,9 +53,10 @@ export const POST = async (req: NextRequest) => {
   const body = await req.json();
 
   const { getUser } = getKindeServerSession();
-  const user = getUser();
+  const user = await getUser();
 
-  const { id: userId } = user;
+  // Kinde SDK 2 returns null when nobody is signed in
+  const userId = user?.id;
 
   if (!userId) return new Response("Unauthorized", { status: 401 });
 

@@ -1,18 +1,17 @@
 "use client";
 
 import { useState } from "react";
-import { useResizeDetector } from "react-resize-detector";
+import { useElementSize } from "@mantine/hooks";
 import { Document, Page } from "@/lib/pdfjs";
 import { ThumbnailPlaceholder } from "./ThumbnailPlaceholder";
 
 /** Renders page 1 of a PDF at the width of its container. */
 export default function PdfFirstPage({ url }: { url: string }) {
   const [failed, setFailed] = useState(false);
-  const { width, ref } = useResizeDetector({
-    handleHeight: false,
-    refreshMode: "debounce",
-    refreshRate: 200,
-  });
+  // Mantine's hook measures with a ResizeObserver. react-resize-detector 9
+  // stopped reporting a width here after the move to Next 14, which left the
+  // card blank.
+  const { ref, width } = useElementSize();
 
   if (failed) return <ThumbnailPlaceholder />;
 

@@ -15,6 +15,59 @@ Entry format:
 
 ---
 
+## 2026-11-13: Production build on Next 14 (same chat as below)
+
+- Asked: run the build once the leftover dev server was stopped.
+- Found: the build failed on `/auth-callback`: Next 14 requires a Suspense
+  boundary around `useSearchParams()`. Every page also warned that
+  `themeColor` belongs in the `viewport` export now.
+- Done:
+  - `/auth-callback` renders its contents inside `<Suspense>`.
+  - The same page now validates `origin` (ROADMAP phase 5): only plain
+    in-app paths like `dashboard/abc` are followed; `//example.com` and
+    anything else goes to `/dashboard`. It was an open redirect.
+  - `themeColor` removed from `constructMetadata()`; `src/app/layout.tsx`
+    exports `viewport` with a light and a dark colour.
+- Verified: `pnpm build` passes with no warnings from Next. In the
+  browser: `origin=//example.com` lands on `/dashboard`;
+  `origin=dashboard/billing` lands on billing; the theme-color meta tags
+  are present.
+- Left running: the dev server on port 3000 (started from Claude's preview).
+- Next: phase 5 fixes that need no owner input (`console.log` in the tRPC
+  router, pricing limits from `PLANS`, Stripe webhook typing), then tests
+  and CI.
+
+## 2026-11-13: Next.js 14 and Kinde SDK 2 (same chat as below)
+
+- Asked: leave the owner-only tasks for last and start on what Claude can
+  do. Started with the Kinde SDK upgrade, the top security item.
+- Found: Kinde SDK 2 does not support Next 13.5 (its peer range skips
+  13.3 to 14.2.34), so Next went to 14.2.35 first. React stays 18.
+- Done:
+  - `next` 14.2.35, `eslint-config-next` 14.2.35 (now a dev dependency),
+    `@kinde-oss/kinde-auth-nextjs` 2.13.2.
+  - `getUser()` is awaited in all 12 server files; `Home`, `Navbar` and the
+    pricing page became async server components. `api/message` and
+    `authCallback` handle a null user (v2 returns null when signed out;
+    `api/message` would have crashed).
+  - `api/auth/[kindeAuth]/route.ts` is now `export const GET = handleAuth()`.
+    Link components import from `@kinde-oss/kinde-auth-nextjs/components`.
+  - `src/middleware.ts` now uses Kinde's `withAuth` with
+    `isReturnToCurrentPage` (v2 renamed the session cookies, so the
+    hand-written check from earlier would have stopped working).
+  - File card thumbnails were blank on Next 14: `react-resize-detector`
+    never reported a width. `PdfFirstPage` now uses Mantine's
+    `useElementSize`.
+- Verified: type-check, lint. Signed out: `/dashboard`, `/dashboard/billing`
+  and file pages redirect to sign-in with the return path; sign-in, sign-up
+  and logout reach Kinde. Signed in: landing, Files with thumbnail, billing,
+  file page with the PDF.
+- Not done: `pnpm build` on Next 14. Stopping the preview leaves the Next
+  child process running on port 3000 on Windows, and Claude is not
+  permitted to end it; building while it runs breaks it.
+- Next: stop the process on port 3000, run `pnpm build`. Then phase 5
+  fixes that need no owner input, then tests and CI.
+
 ## 2026-11-13: Crash, link check, dark mode everywhere (same chat as below)
 
 - Asked: the app is crashing, use port 3000 next time; check that the

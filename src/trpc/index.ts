@@ -14,9 +14,9 @@ export const appRouter = router({
     // console.log("authCallback");
 
     const { getUser } = getKindeServerSession();
-    const user = getUser();
-    const userEmail = user.email || "";
-    const userId = user.id || "";
+    const user = await getUser();
+    const userEmail = user?.email || "";
+    const userId = user?.id || "";
 
     // console.log("user", user);
 

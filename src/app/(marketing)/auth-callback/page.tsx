@@ -1,33 +1,40 @@
 "use client";
 
+import { Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { trpc } from "@/app/_trpc/client";
 import { Loader2 } from "lucide-react";
 
-const Page = () => {
+// `origin` comes from the URL, so anyone can put anything in it. Only accept a
+// plain in-app path such as "dashboard" or "dashboard/abc123". Anything else
+// (a full URL, "//evil.com", backslashes) falls back to the dashboard, so the
+// page cannot be used to send a signed-in user to another site.
+const SAFE_ORIGIN = /^[a-zA-Z0-9_-]+(\/[a-zA-Z0-9_-]+)*$/;
+
+function destination(origin: string | null) {
+  return origin && SAFE_ORIGIN.test(origin) ? `/${origin}` : "/dashboard";
+}
+
+function AuthCallback() {
   const router = useRouter();
-
-  const searchParams = useSearchParams();
-  const origin = searchParams.get("origin");
-
-  // console.log("origin", origin);
+  const origin = useSearchParams().get("origin");
 
   trpc.authCallback.useQuery(undefined, {
     onSuccess: ({ success }) => {
-      if (success) {
-        // user is synced to db
-        router.push(origin ? `/${origin}` : "/dashboard");
-      }
+      // user is synced to db
+      if (success) router.push(destination(origin));
     },
     onError: (err) => {
-      if (err.data?.code === "UNAUTHORIZED") {
-        router.push("/sign-in");
-      }
+      if (err.data?.code === "UNAUTHORIZED") router.push("/sign-in");
     },
     retry: true,
     retryDelay: 500,
   });
 
+  return <Waiting />;
+}
+
+function Waiting() {
   return (
     <div className="w-full mt-24 flex justify-center">
       <div className="flex flex-col items-center gap-2">
@@ -37,6 +44,15 @@ const Page = () => {
       </div>
     </div>
   );
-};
+}
 
-export default Page;
+// useSearchParams() needs a Suspense boundary, or Next 14 refuses to build the
+// page: the search params only exist in the browser, so the server renders the
+// fallback and the browser fills in the rest.
+export default function Page() {
+  return (
+    <Suspense fallback={<Waiting />}>
+      <AuthCallback />
+    </Suspense>
+  );
+}
