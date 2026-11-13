@@ -62,7 +62,11 @@ export async function POST(request: Request) {
 
     case "invoice.payment_succeeded": {
       const invoice = event.data.object as Stripe.Invoice;
-      const subscriptionId = idOf(invoice.subscription);
+      // Since API version 2025-03-31 an invoice names its subscription under
+      // `parent.subscription_details`, not at the top level.
+      const subscriptionId = idOf(
+        invoice.parent?.subscription_details?.subscription
+      );
 
       // A one-off invoice, not a subscription payment.
       if (!subscriptionId) break;
@@ -92,11 +96,14 @@ function idOf(value: string | { id: string } | null | undefined) {
 }
 
 function periodFields(subscription: Stripe.Subscription) {
+  // Since API version 2025-03-31 the billing period is per subscription item.
+  // A Pro subscription has exactly one item (the Pro price).
+  const item = subscription.items.data[0];
   return {
-    stripePriceId: subscription.items.data[0]?.price.id,
+    stripePriceId: item?.price.id,
     // Stripe times are seconds since 1970; Date wants milliseconds.
-    stripeCurrentPeriodEnd: new Date(
-      subscription.current_period_end * 1000
-    ).toDateString(),
+    stripeCurrentPeriodEnd: item
+      ? new Date(item.current_period_end * 1000).toDateString()
+      : null,
   };
 }

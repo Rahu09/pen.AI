@@ -36,7 +36,7 @@ A chat that only answered a question needs no doc update.
 ## Commands
 
 ```bash
-pnpm install          # also runs prisma generate
+pnpm install          # also runs prisma generate (client goes to src/generated/prisma)
 pnpm dev              # http://localhost:3000
 pnpm build
 pnpm lint

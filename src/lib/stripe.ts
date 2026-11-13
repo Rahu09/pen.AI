@@ -4,7 +4,10 @@ import { getKindeServerSession } from "@kinde-oss/kinde-auth-nextjs/server";
 import Stripe from "stripe";
 
 export const stripe = new Stripe(process.env.STRIPE_SECRET_KEY ?? "", {
-  apiVersion: "2023-08-16",
+  // Pinned so Stripe never changes response shapes under us. Each SDK major
+  // is built for one API version; this is the one stripe 23 expects. Raise
+  // it together with the SDK, and check the webhook fields when you do.
+  apiVersion: "2026-10-28.endive",
   typescript: true,
 });
 

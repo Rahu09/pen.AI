@@ -15,6 +15,50 @@ Entry format:
 
 ---
 
+## 2026-11-13: Prisma 7 and Stripe 23 (same chat as below)
+
+- Asked: move on to Prisma and Stripe.
+- Done:
+  - Prisma 5.11 to 7.10 (D-020): `prisma-client` generator (CommonJS)
+    into git-ignored `src/generated/prisma`; `prisma.config.ts` with
+    `DIRECT_URL`; `src/db/index.ts` builds the client on
+    `@prisma/adapter-pg`; imports moved to `@/generated/prisma/client`.
+    TypeScript 5.2 to 5.9.3 (Prisma 7 needs 5.4+). `dotenv` added for the
+    CLI config.
+  - Stripe 13 to 23.1, API version pinned to `2026-10-28.endive`. The
+    webhook reads the invoice's subscription from
+    `parent.subscription_details` and the period end from the subscription
+    item (both moved in API 2025-03-31); tests updated to the new shapes.
+    Checkout no longer sets `payment_method_types`.
+- Verified: type-check, lint, 43 tests. Live, read-only: Prisma 7 against
+  Neon (typed query with relation count, raw SQL, pgvector search found the
+  chunk itself first, `migrate status` up to date). Stripe 23 with the test
+  key read the Pro price.
+- Found: the Pro price in Stripe is INR 1,999.00 a month; the pricing page
+  says $500.
+- Not verified: the app in the browser. The dev server on port 3000 was
+  started before the install (19:23, not by Claude) and returns 500 on
+  every page ("Cannot find module @prisma/client/runtime/client") until it
+  is restarted. Production build not run for the same reason.
+- Later the same chat: the stale server turned out to be an orphan of
+  Claude's own failed preview start at 19:23 (PID 25716, parent 33480);
+  the owner ended both in Task Manager. On a fresh dev server: Files page,
+  upload of a generated PDF to `SUCCESS` (vector insert through Prisma 7),
+  chat answer from it, delete (row and stored file gone). No server errors.
+- Next: push and check CI (it runs the production build, not run locally);
+  then tRPC 11 and React Query 5.
+
+## 2026-11-13: UploadThing storage cleanup (same chat as below)
+
+- Asked: remove the files from UploadThing that the app does not use.
+- Done: listed storage with `UTApi.listFiles` and matched each key against
+  every `File` row (key and URL). 24 stored, 1 referenced. After the owner
+  approved the list, the 23 unreferenced files were deleted
+  (`deletedCount=23`), re-checking against the database just before.
+- Verified: storage now holds 1 file, the one the Files page uses.
+- Note: deletion is permanent. The scripts live in Claude's scratchpad,
+  not in the repo.
+
 ## 2026-11-13: UploadThing 7 (same chat as below)
 
 - Asked: the owner added `UPLOADTHING_TOKEN`; do the UploadThing upgrade.

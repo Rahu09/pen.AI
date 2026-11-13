@@ -23,13 +23,13 @@ The codebase started from the "Quill" tutorial project. The package name in
 |---|---|---|
 | Framework | Next.js App Router, React | 14.2.35, 18.2.0 |
 | API | tRPC + TanStack Query | 10.x, 4.x |
-| Database | Prisma on PostgreSQL (Neon) with pgvector | 5.11 |
+| Database | Prisma on PostgreSQL (Neon) with pgvector; queries go through the `pg` driver adapter (`@prisma/adapter-pg`) | 7.10 |
 | Auth | Kinde (`@kinde-oss/kinde-auth-nextjs`) | 2.13 |
 | Uploads | UploadThing | 7.7 (`@uploadthing/react` 7.3). New files are served from `https://<app>.ufs.sh/f/<key>` (`file.ufsUrl`); older rows keep `utfs.io` URLs, which still work. |
 | Retrieval | `@langchain/core`, `@langchain/textsplitters` | 1.4, 1.0 |
 | Chat | Google `gemini-3.5-flash-lite` through `@langchain/google` (`ChatGoogle`) | 0.2 |
 | Embeddings | Google `gemini-embedding-001`, 1536 numbers per chunk, through `@langchain/google-genai` | 2.3 |
-| Payments | Stripe | 13.x, API version 2023-08-16 |
+| Payments | Stripe | 23.1, API version `2026-10-28.endive` (pinned in `src/lib/stripe.ts`) |
 | UI | Tailwind 3.3, shadcn/ui, lucide, next-themes 0.4, react-resizable-panels 4.15 (pinned, see ROADMAP). Fonts through `next/font`: Inter, Instrument Serif, Caveat | |
 | PDF viewer | react-pdf with pdf.js; worker served from our own build | 7.7.3, pdfjs-dist 3.11.174 (pinned together) |
 | PDF text extraction | pdf.js as bundled in `pdf-parse` 1.1 | |
@@ -42,6 +42,9 @@ phase 3).
 
 ```
 prisma/schema.prisma          User, File, Message, DocumentChunk, UploadStatus
+prisma.config.ts              Prisma CLI config (Prisma 7): schema path, migrations, DIRECT_URL for migrate
+src/generated/prisma/         Generated Prisma client (git-ignored; `prisma generate`, runs on install)
+src/db/index.ts               PrismaClient with the pg adapter on DATABASE_URL; import `db` from here
 prisma/migrations/            SQL migrations (the second one enables pgvector)
 src/middleware.ts             Kinde `withAuth` on /dashboard/*: signed-out visitors go to sign-in and come back to the page
 src/app/
@@ -197,7 +200,7 @@ from `.env`.
 | OpenAI | No longer used (D-013). The old key in `.env` was already invalid. |
 | Kinde | Sign-in from localhost works (2026-11-13). SDK 2.13 since 2026-11-13 (1.8 printed tokens to the server log on sign-in). The client secret was public in git history from 2023-10-01 until the 2026-11-13 rewrite (D-011); whether it has been rotated since is not known. |
 | Stripe | Only a test-mode price ID is configured; the production ID is empty. Keys not re-verified. |
-| UploadThing | SDK 7, token set (2026-11-13). Upload, processing and delete verified from localhost. About 24 stored files have no database row (left from older deletes). |
+| UploadThing | SDK 7, token set (2026-11-13). Upload, processing and delete verified from localhost. Storage cleaned on 2026-11-13: only files with a database row remain. |
 | Vercel | Needs: new `DATABASE_URL`, `DIRECT_URL`, `GOOGLE_API_KEY`; Node 22+; `prisma migrate deploy` run once against Neon. |
 
 ## Health at last check (2026-11-13)
@@ -241,6 +244,9 @@ from `.env`.
   (`/auth-callback` wrapped in Suspense; `themeColor` moved to the
   `viewport` export). `/auth-callback` checked in the browser with a safe
   and an unsafe `origin`.
+- Prisma 7 and Stripe 23 (same day): type-check, lint, tests; live reads
+  against Neon and Stripe; in the browser, Files, upload to `SUCCESS`,
+  chat and delete. Production build left to CI.
 - Tests and CI (same day): 43 Vitest tests pass; the CI steps (install,
   type-check, lint, test, build) pass locally with the placeholder
   environment from the workflow. First run on GitHub green (owner,

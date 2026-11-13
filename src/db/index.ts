@@ -1,18 +1,24 @@
-import { PrismaClient } from "@prisma/client";
+import { PrismaPg } from "@prisma/adapter-pg";
+import { PrismaClient } from "@/generated/prisma/client";
+
+// Prisma 7 no longer ships its own query engine binary for connecting:
+// queries go through a "driver adapter", here node-postgres (`pg`). The
+// adapter opens the connections; Prisma builds the SQL and maps the rows.
+// DATABASE_URL is Neon's pooled connection string, which suits serverless
+// functions that open many short-lived connections.
+function createClient() {
+  const adapter = new PrismaPg({ connectionString: process.env.DATABASE_URL });
+  return new PrismaClient({ adapter });
+}
 
 declare global {
   // eslint-disable-next-line no-var
-  var cachedPrisma: PrismaClient;
+  var cachedPrisma: PrismaClient | undefined;
 }
 
-let prisma: PrismaClient;
-if (process.env.NODE_ENV === "production") {
-  prisma = new PrismaClient();
-} else {
-  if (!global.cachedPrisma) {
-    global.cachedPrisma = new PrismaClient();
-  }
-  prisma = global.cachedPrisma;
-}
-
-export const db = prisma;
+// In development Next reloads modules on every change; caching the client on
+// `global` keeps that from opening a new connection pool each time.
+export const db =
+  process.env.NODE_ENV === "production"
+    ? createClient()
+    : (global.cachedPrisma ??= createClient());

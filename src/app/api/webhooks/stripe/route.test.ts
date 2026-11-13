@@ -29,12 +29,17 @@ import { POST } from "./route";
 
 const PERIOD_END = Date.UTC(2026, 11, 13) / 1000; // Stripe uses seconds
 
+// Shape of the current API: the period end sits on the subscription item.
 const subscription = {
   id: "sub_123",
   customer: "cus_123",
-  current_period_end: PERIOD_END,
-  items: { data: [{ price: { id: "price_pro" } }] },
+  items: { data: [{ price: { id: "price_pro" }, current_period_end: PERIOD_END }] },
 };
+
+// Current API: an invoice points at its subscription through `parent`.
+const invoiceFor = (subscription: unknown) => ({
+  parent: { type: "subscription_details", subscription_details: { subscription } },
+});
 
 function event(type: string, object: unknown) {
   mocks.constructEvent.mockReturnValue({ type, data: { object } });
@@ -86,10 +91,7 @@ describe("POST /api/webhooks/stripe", () => {
   // The bug fixed on 2026-11-13: invoices carry no Checkout metadata, and the
   // old route returned early for them, so renewals were never recorded.
   it("moves the period end forward on a renewal invoice, by subscription id", async () => {
-    const res = await event("invoice.payment_succeeded", {
-      metadata: {},
-      subscription: "sub_123",
-    });
+    const res = await event("invoice.payment_succeeded", invoiceFor("sub_123"));
 
     expect(res.status).toBe(200);
     expect(mocks.userUpdateMany).toHaveBeenCalledWith({
@@ -102,13 +104,13 @@ describe("POST /api/webhooks/stripe", () => {
   });
 
   it("accepts an expanded subscription object on the invoice", async () => {
-    await event("invoice.payment_succeeded", { subscription: { id: "sub_123" } });
+    await event("invoice.payment_succeeded", invoiceFor({ id: "sub_123" }));
 
     expect(mocks.retrieveSubscription).toHaveBeenCalledWith("sub_123");
   });
 
   it("ignores an invoice that is not for a subscription", async () => {
-    await event("invoice.payment_succeeded", { subscription: null });
+    await event("invoice.payment_succeeded", { parent: null });
 
     expect(mocks.retrieveSubscription).not.toHaveBeenCalled();
     expect(mocks.userUpdateMany).not.toHaveBeenCalled();

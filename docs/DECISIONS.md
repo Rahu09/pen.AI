@@ -415,6 +415,29 @@ Entry format:
 - Consequences: Two exact pins in package.json that a routine update must
   not loosen. ROADMAP phase 3 lists them under the Next 15/16 item.
 
+## D-020: Prisma 7 with the node-postgres adapter, CommonJS client
+
+- Date: 2026-11-13
+- Status: Accepted (owner asked for Prisma and Stripe upgrades; the setup
+  was chosen by Claude).
+- Context: Prisma 7 requires a driver adapter, a generated client outside
+  `node_modules`, and connection strings in `prisma.config.ts`. Its guide
+  suggests making the project an ES module.
+- Decision: `@prisma/adapter-pg` (node-postgres) on the pooled
+  `DATABASE_URL`; the `prisma-client` generator with `moduleFormat = "cjs"`
+  into `src/generated/prisma` (git-ignored); `prisma.config.ts` uses
+  `DIRECT_URL` for migrations.
+- Alternatives:
+  - `@prisma/adapter-neon` (Neon's serverless driver over WebSockets/HTTP):
+    better for edge runtimes, but everything here runs on Node, and `pg`
+    keeps the app independent of the Postgres host.
+  - `"type": "module"` for the whole project: not required with
+    `moduleFormat = "cjs"`, and it would ripple through Next 14's config
+    files.
+- Consequences: Imports of `PrismaClient` and `Prisma` come from
+  `@/generated/prisma/client`. `pnpm install` must run `prisma generate`
+  (postinstall) before type-check or build, which CI already does.
+
 ---
 
 # Open decisions

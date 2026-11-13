@@ -67,7 +67,11 @@ Pinecone removal are in phase 2, because the retrieval code is rewritten there.
 - [ ] tRPC 10 to 11 and TanStack Query 4 to 5
 - [x] Kinde SDK 1.8 to 2.13: `getUser()` awaited everywhere, `handleAuth()` route, link components from `/components`, `withAuth` middleware. SDK 1.8's token logging is gone
 - [x] UploadThing 5 to 7.7: `createRouteHandler`, `UTApi`, `file.ufsUrl`, `awaitServerData: false`; one `UPLOADTHING_TOKEN` replaces the secret and app id
-- [ ] Prisma and Stripe to current; pin a current Stripe API version
+- [x] Prisma 5 to 7.10: `prisma-client` generator (CommonJS) into `src/generated/prisma`, `prisma.config.ts`, `pg` driver adapter; TypeScript 5.2 to 5.9 (Prisma 7 needs 5.4+). Checked live against Neon: typed queries, raw SQL, pgvector search, `migrate status`
+- [x] Stripe 13 to 23.1, API version pinned to `2026-10-28.endive`. Webhook reads the subscription from `invoice.parent.subscription_details` and the period end from the subscription item; `payment_method_types` dropped from Checkout. Key and Pro price checked live (read-only)
+- [x] Browser check after Prisma 7 (fresh dev server): Files page with message count and thumbnail; upload of a generated PDF to `SUCCESS` (vector insert); chat answered from it; delete removed row and stored file
+- [ ] Production build after Prisma 7 and Stripe 23: not run locally (a dev server was running); CI builds on the next push
+- [ ] Stripe webhook against a real test event (`stripe trigger invoice.payment_succeeded` or a test checkout)
 - [x] pdf.js worker served from our own build instead of the cdnjs URL; `react-pdf` 7.7.3 and `pdfjs-dist` 3.11.174 pinned exactly (they must match)
 - [x] PDF viewer and fullscreen view were blank on Next 14 (`react-resize-detector` reported no width); now measured with Mantine's `useElementSize`, and `react-resize-detector` removed
 - [ ] react-pdf 10 or 11: do with the Next 15/16 step. pdf.js 4+ ships `.mjs` that Next 14's webpack cannot load ("Object.defineProperty called on non-object"), and react-pdf 11 needs React 19
@@ -119,7 +123,7 @@ Not yet checked:
 - [x] Deleting a file (also removes it from UploadThing; checked through `UTApi.listFiles`)
 - [x] Asking a question: messages in the restyled chat
 - [ ] Answers can start with the literal page label ("[Page 1]") copied from the prompt context. Adjust the prompt in `src/app/api/message/route.ts` (or turn it into the "cite the page" feature)
-- [ ] UploadThing storage holds about 24 files while the database has 1: uploads deleted before delete removed them from storage. Owner may clear them in the UploadThing dashboard
+- [x] UploadThing storage cleaned (2026-11-13, owner approved): 23 files with no database row deleted (2024 uploads from the old deployment, failed uploads, an earlier duplicate). 1 file left, the one in use
 - [x] Owner's review of the flat design: they preferred the original look (D-015)
 - [x] Original colours and motion brought back as "ink on aurora" (D-015): landing, navbar, footer, pricing, app shell, Files, billing, chat bubbles
 - [x] Aceternity components and `framer-motion` removed (the aurora and the typed headline were rewritten in CSS); `public/dashboard-preview.jpg` and `public/file-upload-preview.jpg` deleted
@@ -127,7 +131,7 @@ Not yet checked:
 - [x] Link check: signed-out `/dashboard` now goes to sign-in and returns to the page; pricing "Sign up" buttons go to sign-up; Free card says "Open your files" when signed in
 - [ ] Owner's review of the "ink on aurora" look, light and dark (O-9)
 - [ ] `public/thumbnail.png` (link preview image) still shows the old design
-- [ ] Pricing page shows Pro as "$500": `PLANS` has `price.amount: 500` (cents or dollars is not clear); check what Stripe charges and fix the display
+- [ ] Pricing page shows Pro as "$500", but the Stripe price charges INR 1,999.00 a month (checked 2026-11-13). Owner to decide the price; then make `PLANS` match Stripe (amount and currency)
 - [ ] The four `/payment/*` pages are empty stubs
 
 ## Phase 5: Correctness
